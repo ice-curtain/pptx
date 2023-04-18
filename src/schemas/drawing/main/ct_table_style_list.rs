@@ -9,7 +9,6 @@ use crate::schemas::drawing::main::CtTableStyle;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename(serialize = "a:tblStyleLst", deserialize = "tblStyleLst"))]
-
 pub struct CtTableStyleList {
     #[serde(rename = "@def")]
     pub def_attr: String,
