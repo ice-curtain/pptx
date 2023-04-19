@@ -4,15 +4,6 @@ use serde::{Deserialize, Serialize};
  * xmlns:thm15=http://schemas.microsoft.com/office/thememl/2012/main
  */
 
-/**
- * @author : link@lsx
- * @date : 2023/4/7 11:25
- * @description :
- */
-/**
- * @author : zhilong.zhou
- * @description : CT_ThemeFamily
- */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CtThemeFamily {
     #[serde(rename = "@xmlns:thm15")]

@@ -9,7 +9,6 @@ use crate::schemas::presentation::main::CtCommentAuthor;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename(serialize = "p:cmAuthorLst", deserialize = "cmAuthorLst"))]
-
 pub struct CtCommentAuthorList {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@xmlns:p")]
