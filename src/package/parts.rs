@@ -9,7 +9,7 @@ use crate::schemas::standard::microsoft::presentation::CtAuthorList;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Part<T> {
     pub file_path: String,
-    pub body: T,
+    pub body: Box<T>,
 }
 
 pub type ContentTypes = Part<ContentType>;
@@ -39,7 +39,7 @@ impl<T> Part<T> {
     pub fn new(file_path: &str, body: T) -> Part<T> {
         Part {
             file_path: file_path.to_string(),
-            body,
+            body:Box::new(body),
         }
     }
 

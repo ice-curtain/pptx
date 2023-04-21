@@ -19,6 +19,7 @@ mod tests {
     use std::fs::File;
     use std::io::Write;
     use std::str::FromStr;
+    use std::time::Instant;
     use crate::package::content_type::ContentType;
     use crate::package::{Package, PartEnum};
     use crate::zip::open;
@@ -111,10 +112,17 @@ mod tests {
 
     #[test]
     fn open_file(){
+        let start = Instant::now();
         let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
-        // let archive = open("/Users/kevin/temps/test.pptx");
+        let duration = start.elapsed();
+        println!("Time elapsed in read zip is: {:?}", duration);
         let package = Package::from(archive);
+        println!("package memory is {}",std::mem::size_of::<Package>());
+        let duration = start.elapsed();
+        println!("Time elapsed in deserialize() is: {:?}", duration);
         package.save();
-        // println!("{}",serde_json::to_string(&package).unwrap());
+        let duration = start.elapsed();
+        println!("Time elapsed in expensive_function() is: {:?}", duration);
+        //RUST_MIN_STACK=6291456
     }
 }

@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::ops::Index;
 use std::str::FromStr;
+use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
@@ -74,9 +75,7 @@ impl Package {
         }
         match self.presentation {
             Some(presentation) => {
-                println!("{}", &presentation.file_path);
                 let x = quick_xml::se::to_string(&presentation.body).unwrap();
-                println!("{:?}", x.as_bytes());
                 writer.start_file(&presentation.file_path, FileOptions::default());
                 writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
 
@@ -86,9 +85,7 @@ impl Package {
         }
         match self.authors {
             Some(authors) => {
-                println!("{}", &authors.file_path);
                 let x = quick_xml::se::to_string(&authors.body).unwrap();
-                println!("{:?}", x.as_bytes());
                 writer.start_file(&authors.file_path, FileOptions::default());
                 writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
                 writer.write_all(quick_xml::se::to_string(&authors.body).unwrap().as_bytes());
@@ -98,8 +95,6 @@ impl Package {
 
         match self.comment_authors {
             Some(comment_authors) => {
-                println!("{:?}", comment_authors);
-                println!("{:?}", quick_xml::se::to_string(&comment_authors.body));
                 writer.start_file(&comment_authors.file_path, FileOptions::default());
                 writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
                 writer.write_all(quick_xml::se::to_string(&comment_authors.body).unwrap().as_ref());
@@ -247,23 +242,15 @@ impl Package {
 
 impl From<ZipArchive<File>> for Package {
     fn from(mut zip: ZipArchive<File>) -> Self {
-        let len = zip.len();
+
         let mut file_names = zip.file_names().map(|item| { item.to_string() }).collect::<Vec<String>>();
 
         let mut package = Package::default();
-
 
         let mut content_type_file = zip.by_name(CONTENT_TYPE_FILE_NAME).unwrap();
 
 
         let mut content_type: ContentType = read_to(content_type_file);
-        // let mut delindex = 0;
-        // for (index,item) in content_type.defaults.iter().enumerate() {
-        //     if item.content_type.contains("image"){
-        //         delindex = index;
-        //     }
-        // }
-        // content_type.defaults.remove(delindex);
 
         for part in content_type.overrides.iter() {
             let part_enum = PartEnum::from_str(&part.content_type).unwrap();
@@ -362,7 +349,6 @@ impl From<ZipArchive<File>> for Package {
         }
 
 
-        // println!("{:?}", file_names);
 
 
         package
@@ -371,9 +357,15 @@ impl From<ZipArchive<File>> for Package {
 
 
 fn read_to<T: DeserializeOwned>(mut zip_file: ZipFile) -> T {
+    let start = Instant::now();
+    let name = zip_file.name().to_string();
+
     let mut xml = String::new();
     zip_file.read_to_string(&mut xml);
+    let read_duration = start.elapsed();
     let result = quick_xml::de::from_str(&xml);
+    let duration = start.elapsed();
+    println!("Time elapsed in read {}() is: {:?},read to string is {:?}", name, duration,read_duration);
     match result {
         Ok(x) => { x }
         Err(e) => {
@@ -381,6 +373,8 @@ fn read_to<T: DeserializeOwned>(mut zip_file: ZipFile) -> T {
             panic!("{}", e);
         }
     }
+
+
 }
 
 
