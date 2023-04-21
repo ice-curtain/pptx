@@ -112,6 +112,7 @@ mod tests {
     #[test]
     fn open_file(){
         let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
+        // let archive = open("/Users/kevin/temps/test.pptx");
         let package = Package::from(archive);
         package.save();
         // println!("{}",serde_json::to_string(&package).unwrap());

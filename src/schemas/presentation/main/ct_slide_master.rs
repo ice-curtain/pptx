@@ -52,6 +52,9 @@ pub struct CtSlideMaster {
     #[serde(rename(serialize = "p:cSld", deserialize = "cSld"))]
     pub c_sld: CtCommonSlideData,
 
+    #[serde(rename(serialize = "p:clrMap", deserialize = "clrMap"))]
+    pub clr_map: CtColorMapping,
+
     #[serde(rename(serialize = "p:sldLayoutIdLst", deserialize = "sldLayoutIdLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sld_layout_id_lst: Option<CtSlideLayoutIdList>,
@@ -76,6 +79,5 @@ pub struct CtSlideMaster {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_lst: Option<CtExtensionListModify>,
 
-    #[serde(rename(serialize = "p:clrMap", deserialize = "clrMap"))]
-    pub clr_map: CtColorMapping,
+
 }

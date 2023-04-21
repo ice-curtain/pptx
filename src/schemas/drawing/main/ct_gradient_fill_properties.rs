@@ -28,9 +28,7 @@ pub struct CtGradientFillProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gs_lst: Option<CtGradientStopList>,
 
-    #[serde(rename(serialize = "a:tileRect", deserialize = "tileRect"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tile_rect: Option<CtRelativeRect>,
+
 
     #[serde(rename(serialize = "a:lin", deserialize = "lin"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,4 +37,8 @@ pub struct CtGradientFillProperties {
     #[serde(rename(serialize = "a:path", deserialize = "path"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<CtPathShadeProperties>,
+
+    #[serde(rename(serialize = "a:tileRect", deserialize = "tileRect"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tile_rect: Option<CtRelativeRect>,
 }

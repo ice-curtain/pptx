@@ -46,18 +46,6 @@ pub struct CtLineProperties {
     #[serde(rename = "@algn")]
     pub algn_attr: Option<String>,
 
-    #[serde(rename(serialize = "a:headEnd", deserialize = "headEnd"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub head_end: Option<CtLineEndProperties>,
-
-    #[serde(rename(serialize = "a:tailEnd", deserialize = "tailEnd"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tail_end: Option<CtLineEndProperties>,
-
-    #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ext_lst: Option<CtOfficeArtExtensionList>,
-
     #[serde(rename(serialize = "a:noFill", deserialize = "noFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub no_fill: Option<CtNoFillProperties>,
@@ -73,6 +61,7 @@ pub struct CtLineProperties {
     #[serde(rename(serialize = "a:pattFill", deserialize = "pattFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub patt_fill: Option<CtPatternFillProperties>,
+
 
     #[serde(rename(serialize = "a:prstDash", deserialize = "prstDash"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -93,4 +82,22 @@ pub struct CtLineProperties {
     #[serde(rename(serialize = "a:miter", deserialize = "miter"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub miter: Option<CtLineJoinMiterProperties>,
+
+    #[serde(rename(serialize = "a:headEnd", deserialize = "headEnd"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub head_end: Option<CtLineEndProperties>,
+
+    #[serde(rename(serialize = "a:tailEnd", deserialize = "tailEnd"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tail_end: Option<CtLineEndProperties>,
+
+    #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ext_lst: Option<CtOfficeArtExtensionList>,
+
+
+
+
+
+
 }

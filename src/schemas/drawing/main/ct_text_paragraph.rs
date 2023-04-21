@@ -22,10 +22,6 @@ pub struct CtTextParagraph {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub p_pr: Option<Box<CtTextParagraphProperties>>,
 
-    #[serde(rename(serialize = "a:endParaRPr", deserialize = "endParaRPr"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub end_para_r_pr: Option<Box<CtTextCharacterProperties>>,
-
     #[serde(rename(serialize = "a:r", deserialize = "r"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r: Option<Vec<CtRegularTextRun>>,
@@ -37,4 +33,10 @@ pub struct CtTextParagraph {
     #[serde(rename(serialize = "a:fld", deserialize = "fld"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fld: Option<Vec<CtTextField>>,
+
+    #[serde(rename(serialize = "a:endParaRPr", deserialize = "endParaRPr"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end_para_r_pr: Option<Box<CtTextCharacterProperties>>,
+
+
 }

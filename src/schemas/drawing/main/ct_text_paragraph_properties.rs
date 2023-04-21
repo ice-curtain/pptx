@@ -38,50 +38,6 @@ use crate::schemas::drawing::main::CtTextSpacing;
 #[derive(Serialize, Deserialize, Debug)]
 
 pub struct CtTextParagraphProperties {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@marL")]
-    pub mar_l_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@marR")]
-    pub mar_r_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@lvl")]
-    pub lvl_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@indent")]
-    pub indent_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@algn")]
-    pub algn_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@defTabSz")]
-    pub def_tab_sz_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@rtl")]
-    pub rtl_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@eaLnBrk")]
-    pub ea_ln_brk_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@fontAlgn")]
-    pub font_algn_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@latinLnBrk")]
-    pub latin_ln_brk_attr: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@hangingPunct")]
-    pub hanging_punct_attr: Option<String>,
-
     #[serde(rename(serialize = "a:lnSpc", deserialize = "lnSpc"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ln_spc: Option<CtTextSpacing>,
@@ -94,17 +50,6 @@ pub struct CtTextParagraphProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spc_aft: Option<CtTextSpacing>,
 
-    #[serde(rename(serialize = "a:tabLst", deserialize = "tabLst"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tab_lst: Option<CtTextTabStopList>,
-
-    #[serde(rename(serialize = "a:defRPr", deserialize = "defRPr"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub def_r_pr: Option<Box<CtTextCharacterProperties>>,
-
-    #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ext_lst: Option<CtOfficeArtExtensionList>,
 
     #[serde(rename(serialize = "a:buClrTx", deserialize = "buClrTx"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -149,4 +94,63 @@ pub struct CtTextParagraphProperties {
     #[serde(rename(serialize = "a:buBlip", deserialize = "buBlip"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bu_blip: Option<Box<CtTextBlipBullet>>,
+
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@marL")]
+    pub mar_l_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@marR")]
+    pub mar_r_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@lvl")]
+    pub lvl_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@indent")]
+    pub indent_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@algn")]
+    pub algn_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@defTabSz")]
+    pub def_tab_sz_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@rtl")]
+    pub rtl_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@eaLnBrk")]
+    pub ea_ln_brk_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@fontAlgn")]
+    pub font_algn_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@latinLnBrk")]
+    pub latin_ln_brk_attr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@hangingPunct")]
+    pub hanging_punct_attr: Option<String>,
+
+
+    #[serde(rename(serialize = "a:tabLst", deserialize = "tabLst"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tab_lst: Option<CtTextTabStopList>,
+
+    #[serde(rename(serialize = "a:defRPr", deserialize = "defRPr"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub def_r_pr: Option<Box<CtTextCharacterProperties>>,
+
+    #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ext_lst: Option<CtOfficeArtExtensionList>,
+
 }

@@ -30,9 +30,6 @@ pub struct CtGroupShape {
     #[serde(rename(serialize = "p:grpSpPr", deserialize = "grpSpPr"))]
     pub grp_sp_pr: CtGroupShapeProperties,
 
-    #[serde(rename(serialize = "p:extLst", deserialize = "extLst"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ext_lst: Option<CtExtensionListModify>,
 
     #[serde(rename(serialize = "p:sp", deserialize = "sp"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -57,4 +54,9 @@ pub struct CtGroupShape {
     #[serde(rename(serialize = "p:contentPart", deserialize = "contentPart"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub content_part: Option<Vec<CtRel>>,
+
+
+    #[serde(rename(serialize = "p:extLst", deserialize = "extLst"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ext_lst: Option<CtExtensionListModify>,
 }

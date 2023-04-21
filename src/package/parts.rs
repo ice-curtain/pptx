@@ -1,11 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::package::content_type::{ContentType};
-use crate::package::doc_props;
-use crate::schemas::drawing::main::CtTableStyleList;
-use crate::schemas::presentation::main::{
-    CtCommentAuthorList, CtPresentation, CtPresentationProperties, CtViewProperties,
-};
+use crate::package::{doc_props, media};
+use crate::schemas::drawing::main::{CtOfficeStyleSheet, CtTableStyleList};
+use crate::schemas::presentation::main::{CtCommentAuthorList, CtNotesMaster, CtNotesSlide, CtPresentation, CtPresentationProperties, CtSlide, CtSlideLayout, CtSlideMaster, CtTagList, CtViewProperties};
 use crate::schemas::standard::microsoft::presentation::CtAuthorList;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -23,7 +21,16 @@ pub type CommentAuthors = Part<CtCommentAuthorList>;
 pub type ViewProps = Part<CtViewProperties>;
 pub type App = Part<doc_props::App>;
 pub type Core = Part<doc_props::Core>;
+pub type Thumbnail = Part<Vec<u8>>;
 pub type Custom = Part<doc_props::Custom>;
+pub type Slide = Part<CtSlide>;
+pub type Theme = Part<CtOfficeStyleSheet>;
+pub type NotesSlide = Part<CtNotesSlide>;
+pub type NotesMaster = Part<CtNotesMaster>;
+pub type SlideLayout = Part<CtSlideLayout>;
+pub type SlideMaster = Part<CtSlideMaster>;
+pub type Tag = Part<CtTagList>;
+pub type Media = Part<media::Media>;
 
 
 

@@ -46,11 +46,11 @@ use crate::schemas::drawing::main::CtTintEffect;
 
 pub struct CtBlip {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@embed")]
+    #[serde(rename(serialize = "@r:embed", deserialize = "@embed"))]
     pub embed_attr: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "@link")]
+    #[serde(rename(serialize = "@r:link", deserialize = "@link"))]
     pub link_attr: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

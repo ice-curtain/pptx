@@ -26,7 +26,7 @@ pub struct CtGraphicalObjectFrame {
     #[serde(rename(serialize = "p:xfrm", deserialize = "xfrm"))]
     pub xfrm: CtTransform2D,
 
-    #[serde(rename(serialize = "p:graphic", deserialize = "graphic"))]
+    #[serde(rename(serialize = "a:graphic", deserialize = "graphic"))]
     pub graphic: CtGraphicalObject,
 
     #[serde(rename(serialize = "p:extLst", deserialize = "extLst"))]

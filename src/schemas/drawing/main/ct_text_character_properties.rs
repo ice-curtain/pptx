@@ -42,6 +42,65 @@ use crate::schemas::drawing::main::CtEffectContainer;
 #[derive(Serialize, Deserialize, Debug)]
 
 pub struct CtTextCharacterProperties {
+    #[serde(rename(serialize = "a:ln", deserialize = "ln"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ln: Option<CtLineProperties>,
+
+    #[serde(rename(serialize = "a:noFill", deserialize = "noFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub no_fill: Option<CtNoFillProperties>,
+
+    #[serde(rename(serialize = "a:solidFill", deserialize = "solidFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub solid_fill: Option<CtSolidColorFillProperties>,
+
+    #[serde(rename(serialize = "a:gradFill", deserialize = "gradFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grad_fill: Option<CtGradientFillProperties>,
+
+    #[serde(rename(serialize = "a:blipFill", deserialize = "blipFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub blip_fill: Option<Box<CtBlipFillProperties>>,
+
+    #[serde(rename(serialize = "a:pattFill", deserialize = "pattFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub patt_fill: Option<CtPatternFillProperties>,
+
+    #[serde(rename(serialize = "a:grpFill", deserialize = "grpFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grp_fill: Option<CtGroupFillProperties>,
+
+    #[serde(rename(serialize = "a:effectLst", deserialize = "effectLst"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub effect_lst: Option<Box<CtEffectList>>,
+
+    #[serde(rename(serialize = "a:effectDag", deserialize = "effectDag"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub effect_dag: Option<Box<CtEffectContainer>>,
+
+
+    #[serde(rename(serialize = "a:highlight", deserialize = "highlight"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub highlight: Option<CtColor>,
+
+
+    #[serde(rename(serialize = "a:uLnTx", deserialize = "uLnTx"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub u_ln_tx: Option<CtTextUnderlineLineFollowText>,
+
+    #[serde(rename(serialize = "a:uLn", deserialize = "uLn"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub u_ln: Option<CtLineProperties>,
+
+    #[serde(rename(serialize = "a:uFillTx", deserialize = "uFillTx"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub u_fill_tx: Option<CtTextUnderlineFillFollowText>,
+
+    #[serde(rename(serialize = "a:uFill", deserialize = "uFill"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub u_fill: Option<Box<CtTextUnderlineFillGroupWrapper>>,
+
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@kumimoji")]
     pub kumimoji_attr: Option<String>,
@@ -118,13 +177,8 @@ pub struct CtTextCharacterProperties {
     #[serde(rename = "@bmk")]
     pub bmk_attr: Option<String>,
 
-    #[serde(rename(serialize = "a:ln", deserialize = "ln"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ln: Option<CtLineProperties>,
 
-    #[serde(rename(serialize = "a:highlight", deserialize = "highlight"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub highlight: Option<CtColor>,
+
 
     #[serde(rename(serialize = "a:latin", deserialize = "latin"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -157,52 +211,4 @@ pub struct CtTextCharacterProperties {
     #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_lst: Option<CtOfficeArtExtensionList>,
-
-    #[serde(rename(serialize = "a:noFill", deserialize = "noFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub no_fill: Option<CtNoFillProperties>,
-
-    #[serde(rename(serialize = "a:solidFill", deserialize = "solidFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub solid_fill: Option<CtSolidColorFillProperties>,
-
-    #[serde(rename(serialize = "a:gradFill", deserialize = "gradFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub grad_fill: Option<CtGradientFillProperties>,
-
-    #[serde(rename(serialize = "a:blipFill", deserialize = "blipFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub blip_fill: Option<Box<CtBlipFillProperties>>,
-
-    #[serde(rename(serialize = "a:pattFill", deserialize = "pattFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub patt_fill: Option<CtPatternFillProperties>,
-
-    #[serde(rename(serialize = "a:grpFill", deserialize = "grpFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub grp_fill: Option<CtGroupFillProperties>,
-
-    #[serde(rename(serialize = "a:effectLst", deserialize = "effectLst"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub effect_lst: Option<Box<CtEffectList>>,
-
-    #[serde(rename(serialize = "a:effectDag", deserialize = "effectDag"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub effect_dag: Option<Box<CtEffectContainer>>,
-
-    #[serde(rename(serialize = "a:uLnTx", deserialize = "uLnTx"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub u_ln_tx: Option<CtTextUnderlineLineFollowText>,
-
-    #[serde(rename(serialize = "a:uLn", deserialize = "uLn"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub u_ln: Option<CtLineProperties>,
-
-    #[serde(rename(serialize = "a:uFillTx", deserialize = "uFillTx"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub u_fill_tx: Option<CtTextUnderlineFillFollowText>,
-
-    #[serde(rename(serialize = "a:uFill", deserialize = "uFill"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub u_fill: Option<Box<CtTextUnderlineFillGroupWrapper>>,
 }

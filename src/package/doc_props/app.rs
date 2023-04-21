@@ -45,8 +45,13 @@ pub struct App {
     #[serde(rename = "TitlesOfParts")]
     pub titles_of_parts: TitlesOfParts,
 
+    #[serde(rename = "Company")]
+    pub company: Option<String>,
+
     #[serde(rename = "LinksUpToDate")]
     pub links_up_to_date: bool,
+
+
 
     #[serde(rename = "SharedDoc")]
     pub shared_doc: bool,
