@@ -12,7 +12,7 @@ use zip::write::FileOptions;
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
 use crate::package::media::{Media, MEDIA_DIR};
-use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, NotesMaster, NotesSlide, PresentationMain, PresProps, Slide, SlideLayout, SlideMaster, TableStyles, Tags, Theme, ViewProps};
+use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, NotesSlide, PresentationMain, PresProps, Slide, SlideLayout, SlideMaster, TableStyles, Tags, Theme, ViewProps};
 use crate::package::parts::{ContentTypes, Presentation, Thumbnail};
 
 pub mod parts;
@@ -37,6 +37,7 @@ pub const AUTHORS_CONTENT_TYPE: &str = "application/vnd.ms-powerpoint.authors+xm
 pub const CORE_CONTENT_TYPE: &str = "application/vnd.openxmlformats-package.core-properties+xml";
 pub const APP_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.extended-properties+xml";
 pub const CUSTOM_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.custom-properties+xml";
+pub const HANDOUT_MASTER_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml";
 
 
 #[derive(Serialize, Default)]
@@ -59,6 +60,7 @@ pub struct Package {
     slide_masters: Option<Vec<parts::SlideMaster>>,
     tags: Option<Vec<parts::Tag>>,
     medias: Option<Vec<parts::Media>>,
+    handout_masters:Option<Vec<parts::HandOutMaster>>
 }
 
 
@@ -225,6 +227,18 @@ impl Package {
             }
             None => {}
         }
+        match self.handout_masters {
+            Some(handout_masters) => {
+                for handout in handout_masters {
+                    writer.start_file(&handout.file_path, FileOptions::default());
+                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
+                    writer.write_all(quick_xml::se::to_string(&handout.body).unwrap().as_ref());
+                }
+            }
+            None => {}
+        }
+
+
 
         match self.medias {
             Some(medias) => {
@@ -242,7 +256,6 @@ impl Package {
 
 impl From<ZipArchive<File>> for Package {
     fn from(mut zip: ZipArchive<File>) -> Self {
-
         let mut file_names = zip.file_names().map(|item| { item.to_string() }).collect::<Vec<String>>();
 
         let mut package = Package::default();
@@ -253,6 +266,7 @@ impl From<ZipArchive<File>> for Package {
         let mut content_type: ContentType = read_to(content_type_file);
 
         for part in content_type.overrides.iter() {
+            println!("{}",&part.content_type);
             let part_enum = PartEnum::from_str(&part.content_type).unwrap();
 
             let file_path = &part.part_name[1..];
@@ -329,6 +343,14 @@ impl From<ZipArchive<File>> for Package {
                 Core => { package.core = Some(parts::Core::new(file_path, read_to(file))) }
                 App => { package.app = Some(parts::App::new(file_path, read_to(file))) }
                 Custom => { package.custom = Some(parts::Custom::new(file_path, read_to(file))) }
+                HandoutMaster => {
+                    if package.handout_masters.is_none() {
+                        package.handout_masters = Some(Vec::new())
+                    }
+                    let tags = package.handout_masters.as_mut().unwrap();
+                    let tag = parts::HandOutMaster::new(file_path, read_to(file));
+                    tags.push(tag);
+                }
                 _ => { panic!("unknown part") }
             }
         }
@@ -336,7 +358,7 @@ impl From<ZipArchive<File>> for Package {
         for file_name in file_names {
             let mut file = zip.by_name(&file_name).unwrap();
 
-            if file_name.contains(MEDIA_DIR) | file_name.contains("_rels")| file_name.contains("thumbnail"){
+            if file_name.contains(MEDIA_DIR) | file_name.contains("_rels") | file_name.contains("thumbnail") {
                 if package.medias.is_none() {
                     package.medias = Some(Vec::new())
                 }
@@ -347,8 +369,6 @@ impl From<ZipArchive<File>> for Package {
                 medias.push(media);
             }
         }
-
-
 
 
         package
@@ -365,7 +385,7 @@ fn read_to<T: DeserializeOwned>(mut zip_file: ZipFile) -> T {
     let read_duration = start.elapsed();
     let result = quick_xml::de::from_str(&xml);
     let duration = start.elapsed();
-    println!("Time elapsed in read {}() is: {:?},read to string is {:?}", name, duration,read_duration);
+    println!("Time elapsed in read {}() is: {:?},read to string is {:?}", name, duration, read_duration);
     match result {
         Ok(x) => { x }
         Err(e) => {
@@ -373,8 +393,6 @@ fn read_to<T: DeserializeOwned>(mut zip_file: ZipFile) -> T {
             panic!("{}", e);
         }
     }
-
-
 }
 
 
@@ -396,10 +414,11 @@ pub enum PartEnum {
     Core,
     App,
     Custom,
+    HandoutMaster,
 }
 
 impl FromStr for PartEnum {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -419,7 +438,8 @@ impl FromStr for PartEnum {
             CORE_CONTENT_TYPE => { Ok(Core) }
             APP_CONTENT_TYPE => { Ok(App) }
             CUSTOM_CONTENT_TYPE => { Ok(Custom) }
-            _ => { Err(()) }
+            HANDOUT_MASTER_CONTENT_TYPE => { Ok(HandoutMaster) }
+            _ => { Err(format!("invalid content type:{}",s)) }
         }
     }
 }

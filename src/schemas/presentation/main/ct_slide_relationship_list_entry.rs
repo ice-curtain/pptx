@@ -9,5 +9,6 @@ use serde::{Deserialize, Serialize};
 
 pub struct CtSlideRelationshipListEntry {
     #[serde(rename = "@r:id")]
+
     pub r_id_attr: String,
 }

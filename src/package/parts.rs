@@ -3,13 +3,14 @@ use serde::{Deserialize, Serialize};
 use crate::package::content_type::{ContentType};
 use crate::package::{doc_props, media};
 use crate::schemas::drawing::main::{CtOfficeStyleSheet, CtTableStyleList};
-use crate::schemas::presentation::main::{CtCommentAuthorList, CtNotesMaster, CtNotesSlide, CtPresentation, CtPresentationProperties, CtSlide, CtSlideLayout, CtSlideMaster, CtTagList, CtViewProperties};
+use crate::schemas::presentation::main::{CtCommentAuthorList, CtHandoutMaster, CtNotesMaster, CtNotesSlide, CtPresentation, CtPresentationProperties, CtSlide, CtSlideLayout, CtSlideMaster, CtTagList, CtViewProperties};
 use crate::schemas::standard::microsoft::presentation::CtAuthorList;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Part<T> {
     pub file_path: String,
     pub body: Box<T>,
+    // pub buf:Vec<u8>
 }
 
 pub type ContentTypes = Part<ContentType>;
@@ -31,6 +32,7 @@ pub type SlideLayout = Part<CtSlideLayout>;
 pub type SlideMaster = Part<CtSlideMaster>;
 pub type Tag = Part<CtTagList>;
 pub type Media = Part<media::Media>;
+pub type HandOutMaster = Part<CtHandoutMaster>;
 
 
 

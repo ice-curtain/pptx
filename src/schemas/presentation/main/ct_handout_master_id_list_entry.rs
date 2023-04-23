@@ -10,7 +10,7 @@ use crate::schemas::presentation::main::CtExtensionList;
 #[derive(Serialize, Deserialize, Debug)]
 
 pub struct CtHandoutMasterIdListEntry {
-    #[serde(rename = "@r:id")]
+    #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
     pub r_id_attr: String,
 
     #[serde(rename(serialize = "p:extLst", deserialize = "extLst"))]

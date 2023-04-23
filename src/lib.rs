@@ -1,7 +1,7 @@
 mod common;
 mod schemas;
-mod package;
-mod zip;
+pub mod package;
+pub mod zip;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
@@ -113,6 +113,7 @@ mod tests {
     #[test]
     fn open_file(){
         let start = Instant::now();
+        // let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
         let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
         let duration = start.elapsed();
         println!("Time elapsed in read zip is: {:?}", duration);

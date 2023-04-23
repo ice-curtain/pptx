@@ -13,6 +13,7 @@ pub struct Core {
     pub dcterms: String,
 
     #[serde(rename = "@xmlns:dcmitype")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dcmitype: Option<String>,
 
     #[serde(rename = "@xmlns:xsi")]

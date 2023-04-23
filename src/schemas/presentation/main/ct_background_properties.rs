@@ -34,35 +34,35 @@ pub struct CtBackgroundProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_lst: Option<CtExtensionList>,
 
-    #[serde(rename(serialize = "p:noFill", deserialize = "noFill"))]
+    #[serde(rename(serialize = "a:noFill", deserialize = "noFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub no_fill: Option<CtNoFillProperties>,
 
-    #[serde(rename(serialize = "p:solidFill", deserialize = "solidFill"))]
+    #[serde(rename(serialize = "a:solidFill", deserialize = "solidFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub solid_fill: Option<CtSolidColorFillProperties>,
 
-    #[serde(rename(serialize = "p:gradFill", deserialize = "gradFill"))]
+    #[serde(rename(serialize = "a:gradFill", deserialize = "gradFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub grad_fill: Option<CtGradientFillProperties>,
 
-    #[serde(rename(serialize = "p:blipFill", deserialize = "blipFill"))]
+    #[serde(rename(serialize = "a:blipFill", deserialize = "blipFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blip_fill: Option<Box<CtBlipFillProperties>>,
 
-    #[serde(rename(serialize = "p:pattFill", deserialize = "pattFill"))]
+    #[serde(rename(serialize = "a:pattFill", deserialize = "pattFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub patt_fill: Option<CtPatternFillProperties>,
 
-    #[serde(rename(serialize = "p:grpFill", deserialize = "grpFill"))]
+    #[serde(rename(serialize = "a:grpFill", deserialize = "grpFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub grp_fill: Option<CtGroupFillProperties>,
 
-    #[serde(rename(serialize = "p:effectLst", deserialize = "effectLst"))]
+    #[serde(rename(serialize = "a:effectLst", deserialize = "effectLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub effect_lst: Option<Box<CtEffectList>>,
 
-    #[serde(rename(serialize = "p:effectDag", deserialize = "effectDag"))]
+    #[serde(rename(serialize = "a:effectDag", deserialize = "effectDag"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub effect_dag: Option<Box<CtEffectContainer>>,
 }
