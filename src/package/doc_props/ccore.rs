@@ -32,7 +32,8 @@ pub struct Core {
     pub revision: String,
 
     #[serde(rename(deserialize = "created", serialize = "dcterms:created"))]
-    pub created: DcTerms,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created: Option<DcTerms>,
 
     #[serde(rename(deserialize = "modified", serialize = "dcterms:modified"))]
     pub modified: DcTerms,

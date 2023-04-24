@@ -11,9 +11,9 @@ use zip::read::ZipFile;
 use zip::write::FileOptions;
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
-use crate::package::media::{Media, MEDIA_DIR};
+use crate::package::media::{MEDIA_DIR, UnSupportPart};
 use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, NotesSlide, PresentationMain, PresProps, Slide, SlideLayout, SlideMaster, TableStyles, Tags, Theme, ViewProps};
-use crate::package::parts::{ContentTypes, Presentation, Thumbnail};
+use crate::package::parts::{ContentTypes, Part, Presentation, Thumbnail};
 
 pub mod parts;
 pub mod content_type;
@@ -59,196 +59,71 @@ pub struct Package {
     slide_layouts: Option<Vec<parts::SlideLayout>>,
     slide_masters: Option<Vec<parts::SlideMaster>>,
     tags: Option<Vec<parts::Tag>>,
-    medias: Option<Vec<parts::Media>>,
-    handout_masters:Option<Vec<parts::HandOutMaster>>
+    unsupport_parts: Option<Vec<parts::UnSupportParts>>,
+    handout_masters: Option<Vec<parts::HandOutMaster>>,
+}
+
+pub trait Save {
+    fn save(self, writer: &mut ZipWriter<File>);
+}
+
+impl<T: Serialize> Save for Option<Part<T>> {
+    fn save(self, writer: &mut ZipWriter<File>) {
+        match self {
+            Some(mut part) => {
+                writer.start_file(&part.file_path, FileOptions::default());
+                if part.body.is_some() {
+                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
+                    part.buf = Some(quick_xml::se::to_string(&part.body).unwrap().into_bytes())
+                }
+                writer.write_all(part.buf.unwrap().as_slice());
+            }
+            None => {}
+        }
+    }
+}
+
+impl<T: Serialize> Save for Option<Vec<Part<T>>> {
+    fn save(self, writer: &mut ZipWriter<File>) {
+        match self {
+            Some(parts) => {
+                for mut part in parts.into_iter() {
+                    writer.start_file(&part.file_path, FileOptions::default());
+                    if part.body.is_some() {
+                        writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
+                        part.buf = Some(quick_xml::se::to_string(&part.body).unwrap().into_bytes())
+                    }
+                    writer.write_all(part.buf.unwrap().as_slice());
+                }
+            }
+            None => {}
+        }
+    }
 }
 
 
 impl Package {
-    pub fn save(self) {
-        let mut writer = ZipWriter::new(File::create("/Users/kevin/temps/3.pptx").unwrap());
-        match self.content_type {
-            Some(content_type) => {
-                writer.start_file(&content_type.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&content_type.body).unwrap().as_bytes());
-            }
-            None => {}
-        }
-        match self.presentation {
-            Some(presentation) => {
-                let x = quick_xml::se::to_string(&presentation.body).unwrap();
-                writer.start_file(&presentation.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-
-                writer.write_all(quick_xml::se::to_string(&presentation.body).unwrap().as_bytes());
-            }
-            None => {}
-        }
-        match self.authors {
-            Some(authors) => {
-                let x = quick_xml::se::to_string(&authors.body).unwrap();
-                writer.start_file(&authors.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&authors.body).unwrap().as_bytes());
-            }
-            None => {}
-        }
-
-        match self.comment_authors {
-            Some(comment_authors) => {
-                writer.start_file(&comment_authors.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&comment_authors.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-        match self.pres_props {
-            Some(pres_props) => {
-                writer.start_file(&pres_props.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&pres_props.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-        match self.view_props {
-            Some(view_props) => {
-                writer.start_file(&view_props.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&view_props.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-        match self.table_styles {
-            Some(table_styles) => {
-                writer.start_file(&table_styles.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&table_styles.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-
-        match self.app {
-            Some(app) => {
-                writer.start_file(&app.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&app.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-
-
-        match self.core {
-            Some(core) => {
-                writer.start_file(&core.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&core.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-
-        match self.custom {
-            Some(custom) => {
-                writer.start_file(&custom.file_path, FileOptions::default());
-                writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                writer.write_all(quick_xml::se::to_string(&custom.body).unwrap().as_ref());
-            }
-            None => {}
-        }
-
-        match self.slides {
-            Some(slides) => {
-                for slide in slides {
-                    writer.start_file(&slide.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&slide.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-
-        match self.themes {
-            Some(themes) => {
-                for theme in themes {
-                    writer.start_file(&theme.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&theme.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.notes_slides {
-            Some(notes_slides) => {
-                for notes_slide in notes_slides {
-                    writer.start_file(&notes_slide.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&notes_slide.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.notes_masters {
-            Some(notes_masters) => {
-                for notes_master in notes_masters {
-                    writer.start_file(&notes_master.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&notes_master.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.slide_layouts {
-            Some(slide_layouts) => {
-                for slide_layout in slide_layouts {
-                    writer.start_file(&slide_layout.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&slide_layout.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.slide_masters {
-            Some(slide_masters) => {
-                for slide_master in slide_masters {
-                    writer.start_file(&slide_master.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&slide_master.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.tags {
-            Some(tags) => {
-                for tag in tags {
-                    writer.start_file(&tag.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&tag.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-        match self.handout_masters {
-            Some(handout_masters) => {
-                for handout in handout_masters {
-                    writer.start_file(&handout.file_path, FileOptions::default());
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    writer.write_all(quick_xml::se::to_string(&handout.body).unwrap().as_ref());
-                }
-            }
-            None => {}
-        }
-
-
-
-        match self.medias {
-            Some(medias) => {
-                for media in medias {
-                    writer.start_file(&media.file_path, FileOptions::default());
-                    writer.write_all(media.body.buf.as_ref());
-                }
-            }
-            None => {}
-        }
+    pub fn save(self, file_path: &str) {
+        let mut writer = ZipWriter::new(File::create(file_path).unwrap());
+        self.content_type.save(&mut writer);
+        self.presentation.save(&mut writer);
+        self.authors.save(&mut writer);
+        self.comment_authors.save(&mut writer);
+        self.pres_props.save(&mut writer);
+        self.view_props.save(&mut writer);
+        self.table_styles.save(&mut writer);
+        self.app.save(&mut writer);
+        self.core.save(&mut writer);
+        self.custom.save(&mut writer);
+        self.slides.save(&mut writer);
+        self.themes.save(&mut writer);
+        self.notes_slides.save(&mut writer);
+        self.notes_masters.save(&mut writer);
+        self.slide_layouts.save(&mut writer);
+        self.slide_masters.save(&mut writer);
+        self.tags.save(&mut writer);
+        self.handout_masters.save(&mut writer);
+        self.unsupport_parts.save(&mut writer);
         writer.flush();
         writer.finish();
     }
@@ -266,113 +141,123 @@ impl From<ZipArchive<File>> for Package {
         let mut content_type: ContentType = read_to(content_type_file);
 
         for part in content_type.overrides.iter() {
-            println!("{}",&part.content_type);
-            let part_enum = PartEnum::from_str(&part.content_type).unwrap();
-
-            let file_path = &part.part_name[1..];
-            let is_exist = file_names.contains(&file_path.to_string());
-            if is_exist {
-                let index = file_names.iter().position(|r| r == file_path).unwrap();
-                file_names.remove(index);
-            }
-
-            let mut file = zip.by_name(file_path).unwrap();
+            println!("{}", &part.content_type);
+            let part_enum = PartEnum::from_str(&part.content_type);
             match part_enum {
-                PresentationMain => { package.presentation = Some(Presentation::new(file_path, read_to(file))); }
-                SlideMaster => {
-                    if package.slide_masters.is_none() {
-                        package.slide_masters = Some(Vec::new())
+                Ok(part_enum) => {
+                    let file_path = &part.part_name[1..];
+                    let is_exist = file_names.contains(&file_path.to_string());
+                    if is_exist {
+                        let index = file_names.iter().position(|r| r == file_path).unwrap();
+                        file_names.remove(index);
                     }
-                    let slide_masters = package.slide_masters.as_mut().unwrap();
-                    let slide_master = parts::SlideMaster::new(file_path, read_to(file));
-                    slide_masters.push(slide_master);
-                }
-                SlideLayout => {
-                    if package.slide_layouts.is_none() {
-                        package.slide_layouts = Some(Vec::new())
+                    let mut file = zip.by_name(file_path).unwrap();
+                    match part_enum {
+                        PresentationMain => {
+                            package.presentation = Some(Presentation::new_without_body(file_path, Some(read_to_vec(file))));
+                        }
+                        SlideMaster => {
+                            if package.slide_masters.is_none() {
+                                package.slide_masters = Some(Vec::new())
+                            }
+                            let slide_masters = package.slide_masters.as_mut().unwrap();
+                            let slide_master = parts::SlideMaster::new_without_body(file_path, Some(read_to_vec(file)));
+                            slide_masters.push(slide_master);
+                        }
+                        SlideLayout => {
+                            if package.slide_layouts.is_none() {
+                                package.slide_layouts = Some(Vec::new())
+                            }
+                            let slide_layouts = package.slide_layouts.as_mut().unwrap();
+                            let slide_layout = parts::SlideLayout::new_without_body(file_path, Some(read_to_vec(file)));
+                            slide_layouts.push(slide_layout);
+                        }
+                        Slide => {
+                            if package.slides.is_none() {
+                                package.slides = Some(Vec::new())
+                            }
+                            let slides = package.slides.as_mut().unwrap();
+                            let slide = parts::Slide::new_without_body(file_path, Some(read_to_vec(file)));
+                            slides.push(slide);
+                        }
+                        NotesMaster => {
+                            if package.notes_masters.is_none() {
+                                package.notes_masters = Some(Vec::new())
+                            }
+                            let notes_masters = package.notes_masters.as_mut().unwrap();
+                            let notes_master = parts::NotesMaster::new_without_body(file_path, Some(read_to_vec(file)));
+                            notes_masters.push(notes_master);
+                        }
+                        CommentAuthors => { package.comment_authors = Some(parts::CommentAuthors::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        PresProps => { package.pres_props = Some(parts::PresProps::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        ViewProps => { package.view_props = Some(parts::ViewProps::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        Theme => {
+                            if package.themes.is_none() {
+                                package.themes = Some(Vec::new())
+                            }
+                            let themes = package.themes.as_mut().unwrap();
+                            let theme = parts::Theme::new_without_body(file_path, Some(read_to_vec(file)));
+                            themes.push(theme);
+                        }
+                        TableStyles => { package.table_styles = Some(parts::TableStyles::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        NotesSlide => {
+                            if package.notes_slides.is_none() {
+                                package.notes_slides = Some(Vec::new())
+                            }
+                            let notes_slides = package.notes_slides.as_mut().unwrap();
+                            let notes_slide = parts::NotesSlide::new_without_body(file_path, Some(read_to_vec(file)));
+                            notes_slides.push(notes_slide);
+                        }
+                        Tags => {
+                            if package.tags.is_none() {
+                                package.tags = Some(Vec::new())
+                            }
+                            let tags = package.tags.as_mut().unwrap();
+                            let tag = parts::Tag::new_without_body(file_path, Some(read_to_vec(file)));
+                            tags.push(tag);
+                        }
+                        Authors => { package.authors = Some(parts::Authors::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        Core => { package.core = Some(parts::Core::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        App => { package.app = Some(parts::App::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        Custom => { package.custom = Some(parts::Custom::new_without_body(file_path, Some(read_to_vec(file)))) }
+                        HandoutMaster => {
+                            if package.handout_masters.is_none() {
+                                package.handout_masters = Some(Vec::new())
+                            }
+                            let tags = package.handout_masters.as_mut().unwrap();
+                            let tag = parts::HandOutMaster::new_without_body(file_path, Some(read_to_vec(file)));
+                            tags.push(tag);
+                        }
+                        _ => { panic!("unknown part") }
                     }
-                    let slide_layouts = package.slide_layouts.as_mut().unwrap();
-                    let slide_layout = parts::SlideLayout::new(file_path, read_to(file));
-                    slide_layouts.push(slide_layout);
                 }
-                Slide => {
-                    if package.slides.is_none() {
-                        package.slides = Some(Vec::new())
-                    }
-                    let slides = package.slides.as_mut().unwrap();
-                    let slide = parts::Slide::new(file_path, read_to(file));
-                    slides.push(slide);
+                Err(e) => {
+                    println!("{}", e);
                 }
-                NotesMaster => {
-                    if package.notes_masters.is_none() {
-                        package.notes_masters = Some(Vec::new())
-                    }
-                    let notes_masters = package.notes_masters.as_mut().unwrap();
-                    let notes_master = parts::NotesMaster::new(file_path, read_to(file));
-                    notes_masters.push(notes_master);
-                }
-                CommentAuthors => { package.comment_authors = Some(parts::CommentAuthors::new(file_path, read_to(file))) }
-                PresProps => { package.pres_props = Some(parts::PresProps::new(file_path, read_to(file))) }
-                ViewProps => { package.view_props = Some(parts::ViewProps::new(file_path, read_to(file))) }
-                Theme => {
-                    if package.themes.is_none() {
-                        package.themes = Some(Vec::new())
-                    }
-                    let themes = package.themes.as_mut().unwrap();
-                    let theme = parts::Theme::new(file_path, read_to(file));
-                    themes.push(theme);
-                }
-                TableStyles => { package.table_styles = Some(parts::TableStyles::new(file_path, read_to(file))) }
-                NotesSlide => {
-                    if package.notes_slides.is_none() {
-                        package.notes_slides = Some(Vec::new())
-                    }
-                    let notes_slides = package.notes_slides.as_mut().unwrap();
-                    let notes_slide = parts::NotesSlide::new(file_path, read_to(file));
-                    notes_slides.push(notes_slide);
-                }
-                Tags => {
-                    if package.tags.is_none() {
-                        package.tags = Some(Vec::new())
-                    }
-                    let tags = package.tags.as_mut().unwrap();
-                    let tag = parts::Tag::new(file_path, read_to(file));
-                    tags.push(tag);
-                }
-                Authors => { package.authors = Some(parts::Authors::new(file_path, read_to(file))) }
-                Core => { package.core = Some(parts::Core::new(file_path, read_to(file))) }
-                App => { package.app = Some(parts::App::new(file_path, read_to(file))) }
-                Custom => { package.custom = Some(parts::Custom::new(file_path, read_to(file))) }
-                HandoutMaster => {
-                    if package.handout_masters.is_none() {
-                        package.handout_masters = Some(Vec::new())
-                    }
-                    let tags = package.handout_masters.as_mut().unwrap();
-                    let tag = parts::HandOutMaster::new(file_path, read_to(file));
-                    tags.push(tag);
-                }
-                _ => { panic!("unknown part") }
             }
         }
-        package.content_type = Some(ContentTypes::new(CONTENT_TYPE_FILE_NAME, content_type));
+        package.content_type = Some(ContentTypes::new(CONTENT_TYPE_FILE_NAME, Some(Box::new(content_type)), None));
+        let index = file_names.iter().position(|r| r == CONTENT_TYPE_FILE_NAME).unwrap();
+        file_names.remove(index);
         for file_name in file_names {
             let mut file = zip.by_name(&file_name).unwrap();
-
-            if file_name.contains(MEDIA_DIR) | file_name.contains("_rels") | file_name.contains("thumbnail") {
-                if package.medias.is_none() {
-                    package.medias = Some(Vec::new())
-                }
-                let mut buf = Vec::new();
-                file.read_to_end(&mut buf);
-                let medias = package.medias.as_mut().unwrap();
-                let media = parts::Media::new(&file_name, Media { buf });
-                medias.push(media);
+            if package.unsupport_parts.is_none() {
+                package.unsupport_parts = Some(Vec::new())
             }
+            let medias = package.unsupport_parts.as_mut().unwrap();
+            let media = parts::UnSupportParts::new_without_body(&file_name, Some(read_to_vec(file)));
+            medias.push(media);
         }
 
 
         package
     }
+}
+
+fn read_to_vec(mut zipFile: ZipFile) -> Vec<u8> {
+    let mut result = vec![];
+    zipFile.read_to_end(&mut result);
+    result
 }
 
 
@@ -439,7 +324,7 @@ impl FromStr for PartEnum {
             APP_CONTENT_TYPE => { Ok(App) }
             CUSTOM_CONTENT_TYPE => { Ok(Custom) }
             HANDOUT_MASTER_CONTENT_TYPE => { Ok(HandoutMaster) }
-            _ => { Err(format!("invalid content type:{}",s)) }
+            _ => { Err(format!("unsupport content type:{}", s)) }
         }
     }
 }
