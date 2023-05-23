@@ -1,7 +1,8 @@
-mod common;
-mod schemas;
+pub mod common;
+pub mod schemas;
 pub mod package;
 pub mod zip;
+pub mod abstraction;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
@@ -121,7 +122,7 @@ mod tests {
         println!("package memory is {}",std::mem::size_of::<Package>());
         let duration = start.elapsed();
         println!("Time elapsed in deserialize() is: {:?}", duration);
-        package.save();
+        package.save("/Users/kevin/Downloads/666666.pptx");
         let duration = start.elapsed();
         println!("Time elapsed in expensive_function() is: {:?}", duration);
         //RUST_MIN_STACK=6291456

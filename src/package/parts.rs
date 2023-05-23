@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 
 use crate::package::{doc_props, media};
@@ -33,6 +34,18 @@ pub type SlideMaster = Part<CtSlideMaster>;
 pub type Tag = Part<CtTagList>;
 pub type UnSupportParts = Part<media::UnSupportPart>;
 pub type HandOutMaster = Part<CtHandoutMaster>;
+
+
+impl<T> Display for Part<T>{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let x = self.buf.as_ref().unwrap().as_slice();
+        f.write_str(&String::from_utf8_lossy(x))
+    }
+}
+
+
+
+
 
 
 impl<T> Part<T> {

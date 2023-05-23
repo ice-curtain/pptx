@@ -1,46 +1,28 @@
 use serde::{Deserialize, Serialize};
 
 use crate::schemas::drawing::main::CtBlipFillProperties;
-
-use crate::schemas::drawing::main::CtPatternFillProperties;
-
-use crate::schemas::drawing::main::CtSolidColorFillProperties;
-
-use crate::schemas::drawing::main::CtOfficeArtExtensionList;
-
-use crate::schemas::drawing::main::CtGradientFillProperties;
-
-use crate::schemas::drawing::main::CtTextUnderlineLineFollowText;
-
-use crate::schemas::drawing::main::CtHyperlink;
-
-use crate::schemas::drawing::main::CtTextUnderlineFillGroupWrapper;
-
-use crate::schemas::drawing::main::CtNoFillProperties;
-
-use crate::schemas::drawing::main::CtColor;
-
-use crate::schemas::drawing::main::CtTextUnderlineFillFollowText;
-
-use crate::schemas::drawing::main::CtEffectList;
-
-use crate::schemas::drawing::main::CtLineProperties;
-
-use crate::schemas::drawing::main::CtTextFont;
-
 use crate::schemas::drawing::main::CtBoolean;
-
-use crate::schemas::drawing::main::CtGroupFillProperties;
-
+use crate::schemas::drawing::main::CtColor;
 use crate::schemas::drawing::main::CtEffectContainer;
+use crate::schemas::drawing::main::CtEffectList;
+use crate::schemas::drawing::main::CtGradientFillProperties;
+use crate::schemas::drawing::main::CtGroupFillProperties;
+use crate::schemas::drawing::main::CtHyperlink;
+use crate::schemas::drawing::main::CtLineProperties;
+use crate::schemas::drawing::main::CtNoFillProperties;
+use crate::schemas::drawing::main::CtOfficeArtExtensionList;
+use crate::schemas::drawing::main::CtPatternFillProperties;
+use crate::schemas::drawing::main::CtSolidColorFillProperties;
+use crate::schemas::drawing::main::CtTextFont;
+use crate::schemas::drawing::main::CtTextUnderlineFillFollowText;
+use crate::schemas::drawing::main::CtTextUnderlineFillGroupWrapper;
+use crate::schemas::drawing::main::CtTextUnderlineLineFollowText;
 
 /**
  * @author : zhilong.zhou
  * @description : CT_TextCharacterProperties
  */
-
 #[derive(Serialize, Deserialize, Debug)]
-
 pub struct CtTextCharacterProperties {
     #[serde(rename(serialize = "a:ln", deserialize = "ln"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -78,11 +60,9 @@ pub struct CtTextCharacterProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub effect_dag: Option<Box<CtEffectContainer>>,
 
-
     #[serde(rename(serialize = "a:highlight", deserialize = "highlight"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub highlight: Option<CtColor>,
-
 
     #[serde(rename(serialize = "a:uLnTx", deserialize = "uLnTx"))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -99,7 +79,6 @@ pub struct CtTextCharacterProperties {
     #[serde(rename(serialize = "a:uFill", deserialize = "uFill"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub u_fill: Option<Box<CtTextUnderlineFillGroupWrapper>>,
-
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@kumimoji")]
@@ -177,9 +156,6 @@ pub struct CtTextCharacterProperties {
     #[serde(rename = "@bmk")]
     pub bmk_attr: Option<String>,
 
-
-
-
     #[serde(rename(serialize = "a:latin", deserialize = "latin"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub latin: Option<CtTextFont>,
@@ -211,4 +187,53 @@ pub struct CtTextCharacterProperties {
     #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_lst: Option<CtOfficeArtExtensionList>,
+}
+
+
+impl Default for CtTextCharacterProperties {
+    fn default() -> Self {
+        CtTextCharacterProperties {
+            ln: None,
+            no_fill: None,
+            solid_fill: None,
+            grad_fill: None,
+            blip_fill: None,
+            patt_fill: None,
+            grp_fill: None,
+            effect_lst: None,
+            effect_dag: None,
+            highlight: None,
+            u_ln_tx: None,
+            u_ln: None,
+            u_fill_tx: None,
+            u_fill: None,
+            kumimoji_attr: Some("1".to_string()),
+            lang_attr: Some("en-US".to_string()),
+            alt_lang_attr: Some("zh-CN".to_string()),
+            sz_attr: None,
+            b_attr: None,
+            i_attr: None,
+            u_attr: None,
+            strike_attr: None,
+            kern_attr: None,
+            cap_attr: None,
+            spc_attr: None,
+            normalize_h_attr: None,
+            baseline_attr: None,
+            no_proof_attr: None,
+            dirty_attr: Some("0".to_string()),
+            err_attr: None,
+            smt_clean_attr: None,
+            smt_id_attr: None,
+            bmk_attr: None,
+            latin: None,
+            ea: None,
+            cs: None,
+            sym: None,
+            hlink_click: None,
+            hlink_mouse_over: None,
+            rtl: None,
+            ext_lst: None,
+        }
+    }
 }

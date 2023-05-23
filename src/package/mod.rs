@@ -52,7 +52,7 @@ pub struct Package {
     app: Option<parts::App>,
     core: Option<parts::Core>,
     custom: Option<parts::Custom>,
-    slides: Option<Vec<parts::Slide>>,
+    pub slides: Option<Vec<parts::Slide>>,
     themes: Option<Vec<parts::Theme>>,
     notes_slides: Option<Vec<parts::NotesSlide>>,
     notes_masters: Option<Vec<parts::NotesMaster>>,
@@ -141,7 +141,6 @@ impl From<ZipArchive<File>> for Package {
         let mut content_type: ContentType = read_to(content_type_file);
 
         for part in content_type.overrides.iter() {
-            println!("{}", &part.content_type);
             let part_enum = PartEnum::from_str(&part.content_type);
             match part_enum {
                 Ok(part_enum) => {

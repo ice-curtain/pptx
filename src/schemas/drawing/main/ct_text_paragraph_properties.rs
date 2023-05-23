@@ -37,15 +37,19 @@ use crate::schemas::drawing::main::CtTextSpacing;
 
 #[derive(Serialize, Deserialize, Debug)]
 
+///此元素包含包含段落的所有段落级文本属性。 这些段落属性应覆盖与相关段落关联的任何和所有冲突属性
 pub struct CtTextParagraphProperties {
+    ///此元素指定要在段落中使用的垂直行间距。 这可以用两种不同的方式指定，百分比间距和字体点间距。 如果省略此元素，则两行文本之间的间距应由一行中最大一段文本的磅值决定。
     #[serde(rename(serialize = "a:lnSpc", deserialize = "lnSpc"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ln_spc: Option<CtTextSpacing>,
 
+    ///此元素指定出现在段落之前的垂直空白的数量。 该空间通过子元素 spcPct 和 spcPts 以百分比或点数指定。
     #[serde(rename(serialize = "a:spcBef", deserialize = "spcBef"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spc_bef: Option<CtTextSpacing>,
 
+    ///此元素指定段落后出现的垂直空白的数量。 该空间通过子元素 spcPct 和 spcPts 以百分比或点数指定。
     #[serde(rename(serialize = "a:spcAft", deserialize = "spcAft"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spc_aft: Option<CtTextSpacing>,

@@ -17,6 +17,7 @@ pub struct CtTextBody {
     #[serde(rename(serialize = "a:bodyPr", deserialize = "bodyPr"))]
     pub body_pr: CtTextBodyProperties,
 
+    ///此元素指定与此文本正文关联的样式列表
     #[serde(rename(serialize = "a:lstStyle", deserialize = "lstStyle"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lst_style: Option<Box<CtTextListStyle>>,
@@ -24,3 +25,5 @@ pub struct CtTextBody {
     #[serde(rename(serialize = "a:p", deserialize = "p"))]
     pub p: Vec<CtTextParagraph>,
 }
+
+
