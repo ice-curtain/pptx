@@ -47,17 +47,6 @@ impl Default for CtTextParagraph {
     }
 }
 
-impl CtTextParagraph {
-    pub fn add_new_text_run(&mut self) -> &mut CtRegularTextRun {
-        match self.r.as_mut() {
-            Some(runs) => {
-                runs.push(CtRegularTextRun::new(self.end_para_r_pr.as_ref().unwrap()));
-                runs.last_mut().unwrap()
-            }
-            None => { panic!("run can not empty") }
-        }
-    }
-}
 
 
 

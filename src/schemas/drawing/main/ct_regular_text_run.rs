@@ -17,14 +17,3 @@ pub struct CtRegularTextRun {
     pub t: String,
 }
 
-impl CtRegularTextRun {
-    pub fn new(endParaRpr: &CtTextCharacterProperties) -> Self {
-        CtRegularTextRun {
-            r_pr: serde_json::from_str(&serde_json::to_string(endParaRpr).unwrap()).unwrap(),
-            t: String::default(),
-        }
-    }
-    pub fn set_text(&mut self, value: &str) {
-        self.t = String::from(value);
-    }
-}

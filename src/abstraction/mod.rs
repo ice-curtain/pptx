@@ -1,5 +1,7 @@
 pub mod slide;
 pub mod shape;
+pub mod paragraph;
+pub mod textrun;
 
 use crate::package::Package;
 use crate::package::parts::Slide;
