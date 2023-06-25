@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{Read, Write};
 use std::ops::Index;
+use std::panic;
 use std::str::FromStr;
 use std::time::Instant;
 
@@ -9,11 +10,13 @@ use serde::de::DeserializeOwned;
 use zip::{ZipArchive, ZipWriter};
 use zip::read::ZipFile;
 use zip::write::FileOptions;
+use crate::{PresentationError};
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
 use crate::package::media::{MEDIA_DIR, UnSupportPart};
 use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, NotesSlide, PresentationMain, PresProps, Slide, SlideLayout, SlideMaster, TableStyles, Tags, Theme, ViewProps};
 use crate::package::parts::{ContentTypes, Part, Presentation, Thumbnail};
+use crate::zip::open;
 
 pub mod parts;
 pub mod content_type;
@@ -63,6 +66,10 @@ pub struct Package {
     handout_masters: Option<Vec<parts::HandOutMaster>>,
 }
 
+pub trait FileSave {
+    fn save(self, file_path: &str);
+}
+
 pub trait Save {
     fn save(self, writer: &mut ZipWriter<File>);
 }
@@ -102,8 +109,8 @@ impl<T: Serialize> Save for Option<Vec<Part<T>>> {
 }
 
 
-impl Package {
-    pub fn save(self, file_path: &str) {
+impl FileSave for Package {
+    fn save(self, file_path: &str) {
         let mut writer = ZipWriter::new(File::create(file_path).unwrap());
         self.content_type.save(&mut writer);
         self.presentation.save(&mut writer);
@@ -126,6 +133,28 @@ impl Package {
         self.unsupport_parts.save(&mut writer);
         writer.flush();
         writer.finish();
+    }
+}
+
+impl FromStr for Package {
+    type Err = PresentationError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let archive = open(s);
+        match archive {
+            Ok(archive) => {
+                let result = panic::catch_unwind(|| Package::from(archive));
+                match result {
+                    Ok(package) => {
+                        Ok(package)
+                    }
+                    Err(e) => {
+                        Err(PresentationError::ConvertError(format!("{:?}", e)))
+                    }
+                }
+            }
+            Err(e) => { Err(e) }
+        }
     }
 }
 

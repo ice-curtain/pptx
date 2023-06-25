@@ -6,22 +6,34 @@ use unicode_width::UnicodeWidthStr;
 use crate::abstraction::shape::Shape;
 use crate::package::parts::Slide;
 use crate::schemas::drawing::main::{CtRegularTextRun, CtTextBody};
-use crate::schemas::presentation::main::CtShape;
+use crate::schemas::presentation::main::{CtShape, ShapeChoice};
 
 impl Slide {
     fn initial_body(&mut self) {
         let buffer = self.buf.as_ref().unwrap().as_slice();
-        let result = quick_xml::de::from_str(from_utf8(buffer).unwrap());
+        let str = from_utf8(buffer).unwrap();
+        let result = quick_xml::de::from_str(str);
         self.body = Some(result.unwrap());
     }
 
-    pub fn list_shape(&mut self) -> &mut Vec<Shape> {
+    pub fn list_shape(&mut self) -> Vec<&mut Shape> {
         if self.body.is_none() {
             self.initial_body();
         }
         let sp_tree = &mut self.body.as_mut().unwrap().c_sld.sp_tree;
-        let shapes = sp_tree.sp.as_mut().unwrap();
-        shapes
+        let mut result = Vec::new();
+        let items = &mut sp_tree.items;
+        for shapechoice in items {
+            match shapechoice {
+                ShapeChoice::Shape(shape) => {
+                    result.push(shape)
+                }
+                _ => {}
+            }
+        }
+        result
+        // let shapes = sp_tree.sp.as_mut().unwrap();
+        // shapes
         // for shape in shapes.iter_mut() {
         //     let txBody = shape.tx_body.as_mut().unwrap();
         //     for paragraph in txBody.p.iter_mut() {

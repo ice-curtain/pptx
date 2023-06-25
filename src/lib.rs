@@ -1,12 +1,19 @@
+#![allow(unused)]
+#![allow(non_snake_case)]
+
 pub mod common;
 pub mod schemas;
 pub mod package;
 pub mod zip;
 pub mod abstraction;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+
+#[derive(Debug)]
+pub enum PresentationError {
+    ReadError(String),
+    ConvertError(String)
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -110,16 +117,15 @@ mod tests {
     }
 
 
-
     #[test]
-    fn open_file(){
+    fn open_file() {
         let start = Instant::now();
         // let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
         let archive = open("/Users/kevin/Downloads/2月胰腺癌月报-20220321 (2).pptx");
         let duration = start.elapsed();
         println!("Time elapsed in read zip is: {:?}", duration);
         let package = Package::from(archive);
-        println!("package memory is {}",std::mem::size_of::<Package>());
+        println!("package memory is {}", std::mem::size_of::<Package>());
         let duration = start.elapsed();
         println!("Time elapsed in deserialize() is: {:?}", duration);
         package.save("/Users/kevin/Downloads/666666.pptx");

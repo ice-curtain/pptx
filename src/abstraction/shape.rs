@@ -16,6 +16,14 @@ impl Shape {
         return result;
     }
 
+    pub fn is_text_shape(&self) -> bool {
+        self.tx_body.is_some()
+    }
+
+    pub fn get_shape_name(&self) -> String {
+        self.nv_sp_pr.c_nv_pr.name_attr.clone()
+    }
+
 
     pub fn add_new_paragraph(&mut self) -> &mut CtTextParagraph {
         match self.tx_body.as_mut() {
