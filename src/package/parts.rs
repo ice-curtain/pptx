@@ -34,18 +34,37 @@ pub type SlideMaster = Part<CtSlideMaster>;
 pub type Tag = Part<CtTagList>;
 pub type UnSupportParts = Part<media::UnSupportPart>;
 pub type HandOutMaster = Part<CtHandoutMaster>;
+pub type SlideRels = Part<Relationships>;
 
 
-impl<T> Display for Part<T>{
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Relationships {
+    #[serde(rename = "@xmlns")]
+    pub xmlns: String,
+
+    #[serde(rename = "Relationship")]
+    pub relations:Vec<Relationship>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Relationship{
+    #[serde(rename = "@Id")]
+    id:String,
+
+    #[serde(rename = "@Type")]
+    r#type:String,
+
+    #[serde(rename = "@Target")]
+    target:String
+}
+
+
+impl<T> Display for Part<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let x = self.buf.as_ref().unwrap().as_slice();
         f.write_str(&String::from_utf8_lossy(x))
     }
 }
-
-
-
-
 
 
 impl<T> Part<T> {

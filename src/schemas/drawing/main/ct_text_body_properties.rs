@@ -20,9 +20,7 @@ use crate::schemas::drawing::main::CtTextNoAutofit;
  * @author : zhilong.zhou
  * @description : CT_TextBodyProperties
  */
-
 #[derive(Serialize, Deserialize, Debug)]
-
 pub struct CtTextBodyProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@rot")]
@@ -50,19 +48,19 @@ pub struct CtTextBodyProperties {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@lIns")]
-    pub l_ins_attr: Option<String>,
+    pub l_ins_attr: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@tIns")]
-    pub t_ins_attr: Option<String>,
+    pub t_ins_attr: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@rIns")]
-    pub r_ins_attr: Option<String>,
+    pub r_ins_attr: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@bIns")]
-    pub b_ins_attr: Option<String>,
+    pub b_ins_attr: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@numCol")]

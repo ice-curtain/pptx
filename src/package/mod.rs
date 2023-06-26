@@ -11,6 +11,7 @@ use zip::{ZipArchive, ZipWriter};
 use zip::read::ZipFile;
 use zip::write::FileOptions;
 use crate::{PresentationError};
+use regex::Regex;
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
 use crate::package::media::{MEDIA_DIR, UnSupportPart};
@@ -42,8 +43,9 @@ pub const APP_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocumen
 pub const CUSTOM_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.custom-properties+xml";
 pub const HANDOUT_MASTER_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml";
 
+pub const SLIDE_RELS_DIR_PATH:&str = "ppt/slides/_rels";
 
-#[derive(Serialize, Default)]
+#[derive( Default)]
 pub struct Package {
     content_type: Option<ContentTypes>,
     presentation: Option<Presentation>,
@@ -64,6 +66,7 @@ pub struct Package {
     tags: Option<Vec<parts::Tag>>,
     unsupport_parts: Option<Vec<parts::UnSupportParts>>,
     handout_masters: Option<Vec<parts::HandOutMaster>>,
+    slide_rels: Option<Vec<parts::SlideRels>>,
 }
 
 pub trait FileSave {
@@ -105,6 +108,23 @@ impl<T: Serialize> Save for Option<Vec<Part<T>>> {
             }
             None => {}
         }
+    }
+}
+
+impl Package {
+    pub fn get_max_slide_number(&self) -> i32 {
+        let regex = Regex::new(r"(\d+)").unwrap();
+        let mut max = 0;
+        for slide in self.slides.as_ref().unwrap() {
+            let file_path = &slide.file_path;
+            for capture in regex.captures_iter(file_path) {
+                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                if value > max {
+                    max = value;
+                }
+            }
+        }
+        max
     }
 }
 
@@ -267,14 +287,29 @@ impl From<ZipArchive<File>> for Package {
         package.content_type = Some(ContentTypes::new(CONTENT_TYPE_FILE_NAME, Some(Box::new(content_type)), None));
         let index = file_names.iter().position(|r| r == CONTENT_TYPE_FILE_NAME).unwrap();
         file_names.remove(index);
+
+
+        if package.slide_rels.is_none() {
+            package.slide_rels = Some(Vec::new())
+        }
+        let slide_rels = package.slide_rels.as_mut().unwrap();
+
+
+        if package.unsupport_parts.is_none() {
+            package.unsupport_parts = Some(Vec::new())
+        }
+        let medias = package.unsupport_parts.as_mut().unwrap();
+
         for file_name in file_names {
             let mut file = zip.by_name(&file_name).unwrap();
-            if package.unsupport_parts.is_none() {
-                package.unsupport_parts = Some(Vec::new())
+
+            if file_name.starts_with("ppt/slides/_rels") {
+                let slide_rel = parts::SlideRels::new_without_body(&file_name, Some(read_to_vec(file)));
+                slide_rels.push(slide_rel);
+            } else {
+                let media = parts::UnSupportParts::new_without_body(&file_name, Some(read_to_vec(file)));
+                medias.push(media);
             }
-            let medias = package.unsupport_parts.as_mut().unwrap();
-            let media = parts::UnSupportParts::new_without_body(&file_name, Some(read_to_vec(file)));
-            medias.push(media);
         }
 
 
