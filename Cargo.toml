@@ -13,3 +13,4 @@ serde_json = { version = "1.0" }
 unicode-segmentation="1.10.0"
 unicode-width="0.1"
 regex = "~1"
+rand = "0.8"

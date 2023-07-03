@@ -15,8 +15,8 @@ use regex::Regex;
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
 use crate::package::media::{MEDIA_DIR, UnSupportPart};
-use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, NotesSlide, PresentationMain, PresProps, Slide, SlideLayout, SlideMaster, TableStyles, Tags, Theme, ViewProps};
-use crate::package::parts::{ContentTypes, Part, Presentation, Thumbnail};
+use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, PresentationMain, PresProps, Slide, SlideMaster, TableStyles, Tags, Theme, ViewProps};
+use crate::package::parts::{ContentTypes, Media, NotesSlide, Part, Presentation, Rels, SlideLayout, Thumbnail};
 use crate::zip::open;
 
 pub mod parts;
@@ -43,30 +43,40 @@ pub const APP_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocumen
 pub const CUSTOM_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.custom-properties+xml";
 pub const HANDOUT_MASTER_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml";
 
-pub const SLIDE_RELS_DIR_PATH:&str = "ppt/slides/_rels";
+pub const SLIDE_RELS_DIR_PATH: &str = "ppt/slides/_rels";
+pub const SLIDE_LAYOUT_RELS_DIR_PATH: &str = "ppt/slideLayouts/_rels";
+pub const NOTES_SLIDE_RELS_DIR_PATH: &str = "ppt/notesSlides/_rels";
+pub const SLIDE_MASTER_RELS_DIR_PATH: &str = "ppt/slideMasters/_rels";
+pub const PRESENTATION_RELS_DIR_PATH: &str = "ppt/_rels";
+pub const MEDIA_DIR_PATH: &str = "ppt/media";
 
-#[derive( Default)]
+#[derive(Default)]
 pub struct Package {
-    content_type: Option<ContentTypes>,
-    presentation: Option<Presentation>,
-    authors: Option<parts::Authors>,
-    comment_authors: Option<parts::CommentAuthors>,
-    pres_props: Option<parts::PresProps>,
-    view_props: Option<parts::ViewProps>,
-    table_styles: Option<parts::TableStyles>,
-    app: Option<parts::App>,
-    core: Option<parts::Core>,
-    custom: Option<parts::Custom>,
+    pub content_type: Option<ContentTypes>,
+    pub presentation: Option<Presentation>,
+    pub authors: Option<parts::Authors>,
+    pub comment_authors: Option<parts::CommentAuthors>,
+    pub pres_props: Option<parts::PresProps>,
+    pub view_props: Option<parts::ViewProps>,
+    pub table_styles: Option<parts::TableStyles>,
+    pub app: Option<parts::App>,
+    pub core: Option<parts::Core>,
+    pub custom: Option<parts::Custom>,
     pub slides: Option<Vec<parts::Slide>>,
-    themes: Option<Vec<parts::Theme>>,
-    notes_slides: Option<Vec<parts::NotesSlide>>,
-    notes_masters: Option<Vec<parts::NotesMaster>>,
-    slide_layouts: Option<Vec<parts::SlideLayout>>,
-    slide_masters: Option<Vec<parts::SlideMaster>>,
-    tags: Option<Vec<parts::Tag>>,
-    unsupport_parts: Option<Vec<parts::UnSupportParts>>,
-    handout_masters: Option<Vec<parts::HandOutMaster>>,
-    slide_rels: Option<Vec<parts::SlideRels>>,
+    pub themes: Option<Vec<parts::Theme>>,
+    pub notes_slides: Option<Vec<parts::NotesSlide>>,
+    pub notes_masters: Option<Vec<parts::NotesMaster>>,
+    pub slide_layouts: Option<Vec<parts::SlideLayout>>,
+    pub slide_masters: Option<Vec<parts::SlideMaster>>,
+    pub tags: Option<Vec<parts::Tag>>,
+    pub unsupport_parts: Option<Vec<parts::UnSupportParts>>,
+    pub handout_masters: Option<Vec<parts::HandOutMaster>>,
+    pub slide_rels: Option<Vec<parts::Rels>>,
+    pub slide_master_rels: Option<Vec<parts::Rels>>,
+    pub slide_layout_rels: Option<Vec<parts::Rels>>,
+    pub notes_slide_rels: Option<Vec<parts::Rels>>,
+    pub presentation_rels: Option<parts::Rels>,
+    pub medias: Option<Vec<parts::Media>>,
 }
 
 pub trait FileSave {
@@ -112,10 +122,123 @@ impl<T: Serialize> Save for Option<Vec<Part<T>>> {
 }
 
 impl Package {
+    pub fn push_medias(&mut self, mut new_medias: Vec<Media>) {
+        match self.medias.as_mut() {
+            None => {}
+            Some(medias) => {
+                medias.append(&mut new_medias);
+            }
+        }
+    }
+
+    pub fn push_media(&mut self, mut media: Media) {
+        match self.medias.as_mut() {
+            None => {}
+            Some(medias) => {
+                medias.push(media);
+            }
+        }
+    }
+
+
+    pub fn push_slide_layout(&mut self, slide_layout: SlideLayout) {
+        match self.slide_layouts.as_mut() {
+            None => {}
+            Some(notes_slides) => {
+                notes_slides.push(slide_layout);
+            }
+        }
+    }
+
+    pub fn push_notes_slide(&mut self, mut notes_slide: NotesSlide) {
+        match self.notes_slides.as_mut() {
+            None => {}
+            Some(notes_slides) => {
+                notes_slides.push(notes_slide);
+            }
+        }
+    }
+
+    pub fn push_slide_rel(&mut self, relation: Rels) {
+        match self.slide_rels.as_mut() {
+            None => {}
+            Some(relations) => {
+                relations.push(relation);
+            }
+        }
+    }
+
+    pub fn push_slide_layout_rel(&mut self, relation: Rels) {
+        match self.slide_layout_rels.as_mut() {
+            None => {}
+            Some(relations) => {
+                relations.push(relation);
+            }
+        }
+    }
+
+    pub fn push_notes_slide_rel(&mut self, relation: Rels) {
+        match self.notes_slide_rels.as_mut() {
+            None => {}
+            Some(relations) => {
+                relations.push(relation);
+            }
+        }
+    }
+
     pub fn get_max_slide_number(&self) -> i32 {
         let regex = Regex::new(r"(\d+)").unwrap();
         let mut max = 0;
         for slide in self.slides.as_ref().unwrap() {
+            let file_path = &slide.file_path;
+            for capture in regex.captures_iter(file_path) {
+                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                if value > max {
+                    max = value;
+                }
+            }
+        }
+        max
+    }
+
+
+    pub fn get_max_image_media_number(&self) -> i32 {
+        let regex = Regex::new(r"(\d+)").unwrap();
+        let mut max = 0;
+        for slide in self.medias.as_ref().unwrap() {
+            let file_path = &slide.file_path;
+            if file_path.contains("image") {
+                for capture in regex.captures_iter(file_path) {
+                    let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                    if value > max {
+                        max = value;
+                    }
+                }
+            }
+        }
+        max
+    }
+
+    pub fn get_max_notes_slide_number(&self) -> i32 {
+        let regex = Regex::new(r"(\d+)").unwrap();
+        let mut max = 0;
+        for slide in self.notes_slides.as_ref().unwrap() {
+            let file_path = &slide.file_path;
+            for capture in regex.captures_iter(file_path) {
+                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                if value > max {
+                    max = value;
+                }
+            }
+        }
+        max
+    }
+
+
+    pub fn get_max_slide_layouts_number(&self) -> i32 {
+        let regex = Regex::new(r"(\d+)").unwrap();
+        let mut max = 0;
+        for slide in self.slide_layouts.as_ref().unwrap() {
             let file_path = &slide.file_path;
             for capture in regex.captures_iter(file_path) {
                 let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
@@ -150,6 +273,12 @@ impl FileSave for Package {
         self.slide_masters.save(&mut writer);
         self.tags.save(&mut writer);
         self.handout_masters.save(&mut writer);
+        self.slide_rels.save(&mut writer);
+        self.slide_master_rels.save(&mut writer);
+        self.slide_layout_rels.save(&mut writer);
+        self.notes_slide_rels.save(&mut writer);
+        self.presentation_rels.save(&mut writer);
+        self.medias.save(&mut writer);
         self.unsupport_parts.save(&mut writer);
         writer.flush();
         writer.finish();
@@ -212,7 +341,7 @@ impl From<ZipArchive<File>> for Package {
                             let slide_master = parts::SlideMaster::new_without_body(file_path, Some(read_to_vec(file)));
                             slide_masters.push(slide_master);
                         }
-                        SlideLayout => {
+                        PartEnum::SlideLayout => {
                             if package.slide_layouts.is_none() {
                                 package.slide_layouts = Some(Vec::new())
                             }
@@ -248,7 +377,7 @@ impl From<ZipArchive<File>> for Package {
                             themes.push(theme);
                         }
                         TableStyles => { package.table_styles = Some(parts::TableStyles::new_without_body(file_path, Some(read_to_vec(file)))) }
-                        NotesSlide => {
+                        PartEnum::NotesSlide => {
                             if package.notes_slides.is_none() {
                                 package.notes_slides = Some(Vec::new())
                             }
@@ -294,21 +423,61 @@ impl From<ZipArchive<File>> for Package {
         }
         let slide_rels = package.slide_rels.as_mut().unwrap();
 
+        if package.slide_master_rels.is_none() {
+            package.slide_master_rels = Some(Vec::new())
+        }
+        let slide_master_rels = package.slide_master_rels.as_mut().unwrap();
+
+
+        if package.slide_layout_rels.is_none() {
+            package.slide_layout_rels = Some(Vec::new())
+        }
+        let slide_layout_rels = package.slide_layout_rels.as_mut().unwrap();
+
+
+        if package.notes_slide_rels.is_none() {
+            package.notes_slide_rels = Some(Vec::new())
+        }
+        let notes_slide_rels = package.notes_slide_rels.as_mut().unwrap();
+
+
+        if package.medias.is_none() {
+            package.medias = Some(Vec::new())
+        }
+        let medias = package.medias.as_mut().unwrap();
+
 
         if package.unsupport_parts.is_none() {
             package.unsupport_parts = Some(Vec::new())
         }
-        let medias = package.unsupport_parts.as_mut().unwrap();
+        let unsupport_parts = package.unsupport_parts.as_mut().unwrap();
 
         for file_name in file_names {
             let mut file = zip.by_name(&file_name).unwrap();
 
-            if file_name.starts_with("ppt/slides/_rels") {
-                let slide_rel = parts::SlideRels::new_without_body(&file_name, Some(read_to_vec(file)));
+            if file_name.starts_with(SLIDE_RELS_DIR_PATH) {
+                let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
                 slide_rels.push(slide_rel);
-            } else {
-                let media = parts::UnSupportParts::new_without_body(&file_name, Some(read_to_vec(file)));
+            } else if file_name.starts_with(SLIDE_LAYOUT_RELS_DIR_PATH) {
+                let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
+                slide_layout_rels.push(slide_rel);
+            } else if file_name.starts_with(NOTES_SLIDE_RELS_DIR_PATH) {
+                let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
+                notes_slide_rels.push(slide_rel);
+            } else if file_name.starts_with(PRESENTATION_RELS_DIR_PATH) {
+                let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
+                package.presentation_rels = Some(slide_rel);
+            } else if file_name.starts_with(MEDIA_DIR_PATH) {
+                println!("{}", file_name);
+                let media = parts::Media::new_without_body(&file_name, Some(read_to_vec(file)));
                 medias.push(media);
+            } else if file_name.starts_with(SLIDE_MASTER_RELS_DIR_PATH) {
+                println!("{}", file_name);
+                let media = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
+                slide_master_rels.push(media);
+            } else {
+                let unsupport_part = parts::UnSupportParts::new_without_body(&file_name, Some(read_to_vec(file)));
+                unsupport_parts.push(unsupport_part);
             }
         }
 
@@ -325,15 +494,10 @@ fn read_to_vec(mut zipFile: ZipFile) -> Vec<u8> {
 
 
 fn read_to<T: DeserializeOwned>(mut zip_file: ZipFile) -> T {
-    let start = Instant::now();
     let name = zip_file.name().to_string();
-
     let mut xml = String::new();
     zip_file.read_to_string(&mut xml);
-    let read_duration = start.elapsed();
     let result = quick_xml::de::from_str(&xml);
-    let duration = start.elapsed();
-    println!("Time elapsed in read {}() is: {:?},read to string is {:?}", name, duration, read_duration);
     match result {
         Ok(x) => { x }
         Err(e) => {
@@ -372,7 +536,7 @@ impl FromStr for PartEnum {
         match s {
             PRESENTATION_CONTENT_TYPE => { Ok(PresentationMain) }
             SLIDE_MASTER_CONTENT_TYPE => { Ok(SlideMaster) }
-            SLIDE_LAYOUT_CONTENT_TYPE => { Ok(SlideLayout) }
+            SLIDE_LAYOUT_CONTENT_TYPE => { Ok(PartEnum::SlideLayout) }
             SLIDE_CONTENT_TYPE => { Ok(Slide) }
             NOTES_MASTER_CONTENT_TYPE => { Ok(NotesMaster) }
             COMMENT_AUTHORS => { Ok(CommentAuthors) }
@@ -380,7 +544,7 @@ impl FromStr for PartEnum {
             VIEW_PROPS_CONTENT_TYPE => { Ok(ViewProps) }
             THEME_CONTENT_TYPE => { Ok(Theme) }
             TABLE_STYLES_CONTENT_TYPE => { Ok(TableStyles) }
-            NOTES_SLIDE_CONTENT_TYPE => { Ok(NotesSlide) }
+            NOTES_SLIDE_CONTENT_TYPE => { Ok(PartEnum::NotesSlide) }
             TAGS_CONTENT_TYPE => { Ok(Tags) }
             AUTHORS_CONTENT_TYPE => { Ok(Authors) }
             CORE_CONTENT_TYPE => { Ok(Core) }

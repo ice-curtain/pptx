@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::package::{NOTES_SLIDE_CONTENT_TYPE, SLIDE_CONTENT_TYPE, SLIDE_LAYOUT_CONTENT_TYPE};
 
 pub const CONTENT_TYPE_FILE_NAME: &'static str = "[Content_Types].xml";
 
@@ -34,3 +35,5 @@ pub struct Override {
     #[serde(rename = "@PartName")]
     pub part_name: String,
 }
+
+

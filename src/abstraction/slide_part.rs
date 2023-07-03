@@ -8,13 +8,9 @@ use crate::package::parts::Slide;
 use crate::schemas::drawing::main::{CtRegularTextRun, CtTextBody};
 use crate::schemas::presentation::main::{CtShape, ShapeChoice};
 
+/// part类型的是因为需要判断body，因此需要加上_part来跟其他元素进行区别
+
 impl Slide {
-    fn initial_body(&mut self) {
-        let buffer = self.buf.as_ref().unwrap().as_slice();
-        let str = from_utf8(buffer).unwrap();
-        let result = quick_xml::de::from_str(str);
-        self.body = Some(result.unwrap());
-    }
 
     pub fn list_shape(&mut self) -> Vec<&mut Shape> {
         if self.body.is_none() {

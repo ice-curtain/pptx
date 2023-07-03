@@ -1,9 +1,14 @@
-
-use serde::{Serialize,Deserialize};
+use serde::{Serialize, Deserialize};
 
 pub const MEDIA_DIR: &str = "ppt/media";
 
-#[derive(Serialize,Deserialize,Debug)]
-pub struct UnSupportPart {
 
-}
+pub type UnSupportPart = BinaryPart;
+pub type MediaPart = UnSupportPart;
+
+
+/// no field,just placeholder
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BinaryPart {}
+
+

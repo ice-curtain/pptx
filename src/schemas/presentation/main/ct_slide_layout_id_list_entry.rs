@@ -10,7 +10,7 @@ use crate::schemas::presentation::main::CtExtensionList;
 pub struct CtSlideLayoutIdListEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@id")]
-    pub id_attr: Option<String>,
+    pub id_attr: Option<u32>,
 
     #[serde(rename = "@r:id")]
     pub r_id_attr: String,

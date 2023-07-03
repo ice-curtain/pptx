@@ -75,8 +75,8 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
                 __A: serde::de::MapAccess<'de>,
             {
                 serde::de::MapAccess::next_key::<__Field>(&mut __map)?;
-                let mut __field0: Option<Option<String>> = Some(
-                    serde::de::MapAccess::next_value::<Option<String>>(&mut __map)?,
+                let mut __field0: Option<Option<u32>> = Some(
+                    serde::de::MapAccess::next_value::<Option<u32>>(&mut __map)?,
                 );
 
                 serde::de::MapAccess::next_key::<__Field>(&mut __map)?;
@@ -190,8 +190,8 @@ impl<'de> serde::Deserialize<'de> for CtSlideIdListEntry {
                 __A: serde::de::MapAccess<'de>,
             {
                 serde::de::MapAccess::next_key::<__Field>(&mut __map)?;
-                let mut __field0: Option<String> =
-                    Some(serde::de::MapAccess::next_value::<String>(&mut __map)?);
+                let mut __field0: Option<Option<u32>> =
+                    Some(serde::de::MapAccess::next_value::<Option<u32>>(&mut __map)?);
 
                 serde::de::MapAccess::next_key::<__Field>(&mut __map)?;
                 let mut __field1: Option<String> =
