@@ -28,20 +28,6 @@ impl Slide {
             }
         }
         result
-        // let shapes = sp_tree.sp.as_mut().unwrap();
-        // shapes
-        // for shape in shapes.iter_mut() {
-        //     let txBody = shape.tx_body.as_mut().unwrap();
-        //     for paragraph in txBody.p.iter_mut() {
-        //         let text_run = paragraph.r.as_ref().unwrap().get(0).unwrap();
-        //
-        //         let mut new_text_run: CtRegularTextRun = quick_xml::de::from_str(&quick_xml::se::to_string(text_run).unwrap()).unwrap();
-        //         new_text_run.t = "新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增新增".to_string();
-        //
-        //
-        //         paragraph.r.as_mut().unwrap().push(new_text_run);
-        //     }
-        // }
     }
 }
 
