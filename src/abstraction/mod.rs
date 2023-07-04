@@ -194,8 +194,6 @@ fn add_slide_rel_part(package: &mut Package, slide_index: &Vec<(i32, i32)>, slid
                                                     first_slide_master.add_sldlayout(&rId);
 
 
-
-
                                                     first_rel.push(Relationship {
                                                         id: rId,
                                                         r#type: Relationship::RELATION_TYPE_SLIDE_LAYOUT.to_string(),
