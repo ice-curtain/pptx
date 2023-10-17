@@ -57,7 +57,7 @@ pub struct CtBlip {
     #[serde(rename = "@cstate")]
     pub cstate_attr: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+  /*  #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@xmlns:p")]
     pub p_attr: Option<String>,
 
@@ -75,7 +75,7 @@ pub struct CtBlip {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@xmlns")]
-    pub default_namespace_attr: Option<String>,
+    pub default_namespace_attr: Option<String>,*/
 
     #[serde(rename(serialize = "a:extLst", deserialize = "extLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]

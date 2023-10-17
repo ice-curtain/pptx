@@ -13,7 +13,7 @@ use crate::schemas::drawing::main::CtOfficeArtExtensionList;
 
 pub struct CtNonVisualDrawingProps {
     #[serde(rename = "@id")]
-    pub id_attr: String,
+    pub id_attr: u32,
 
     #[serde(rename = "@name")]
     pub name_attr: String,

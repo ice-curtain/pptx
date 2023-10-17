@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 
 pub struct CtPoint2D {
     #[serde(rename = "@x")]
-    pub x_attr: String,
+    pub x_attr: i64,
 
     #[serde(rename = "@y")]
-    pub y_attr: String,
+    pub y_attr: i64,
 }

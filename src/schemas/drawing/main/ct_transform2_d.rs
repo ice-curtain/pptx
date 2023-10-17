@@ -24,10 +24,14 @@ pub struct CtTransform2D {
     #[serde(rename = "@flipV")]
     pub flip_v_attr: Option<String>,
 
+
+    ///This element specifies the location of the bounding box of an object. Effects on an object are not included in this
+    /// bounding box.
     #[serde(rename(serialize = "a:off", deserialize = "off"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub off: Option<CtPoint2D>,
 
+    ///This element specifies the size of the bounding box enclosing the referenced object.
     #[serde(rename(serialize = "a:ext", deserialize = "ext"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext: Option<CtPositiveSize2D>,

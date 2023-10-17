@@ -5,6 +5,7 @@ pub mod textrun;
 pub mod unit;
 pub mod presentation_part;
 pub mod slide_master_part;
+pub mod common_model;
 
 use std::cmp::max;
 use std::collections::HashMap;
@@ -34,11 +35,103 @@ impl Slides for Package {
         }
     }
 
+
     fn merge(&mut self, mut package: Package) {
-        let slides = package.slides;
-        let slide_part_indexs = add_slide_part(self, slides);
-        add_presentation_item(self, &slide_part_indexs);
-        add_slide_rel_part(self, &slide_part_indexs, package.slide_rels, package.notes_slides, package.slide_layout_rels, package.medias, package.slide_layouts, package.notes_slide_rels);
+        let mut max_number = package.get_max_slide_number();
+        let mut result = Vec::new();
+        if let Some(slides) = package.slides {
+            let mut new_index = max_number;
+            for mut slide in slides {
+                new_index += 1;
+
+                let old_index = extract_first_digital(&slide.body.file_path).expect("extract degital form slide file name error");
+                slide.body.file_path = format!("ppt/slides/slide{}.xml", new_index);
+
+                slide.relation.file_path = format!("ppt/slides/slide{}.xml.rel", new_index);
+                let part = &mut slide.relation;
+                update_slide_relation(part, self, &mut package);
+
+
+                package.slides.as_mut().unwrap().push(slide);
+                result.push((old_index, new_index));
+                package.content_type.as_mut().unwrap().add_slide(&format!("/ppt/slides/slide{}.xml", new_index));
+            }
+        }
+
+
+        // let slides = package.slides;
+        // let slide_part_indexs = add_slide_part(self, slides);
+        // add_presentation_item(self, &slide_part_indexs);
+        // add_slide_rel_part(self, &slide_part_indexs, package.slide_rels, package.notes_slides, package.slide_layout_rels, package.medias, package.slide_layouts, package.notes_slide_rels);
+        //
+    }
+}
+
+fn update_slide_relation(relation: &mut Rels, package: &mut Package, target_package: &mut Package) {
+    let mut image_max_number = package.get_max_image_media_number();
+    let mut slide_layouts_number = package.get_max_slide_layouts_number();
+    let mut notes_slide_number = package.get_max_notes_slide_number();
+
+    let relations = relation.get_items();
+    for relation in relations {
+        let target = &relation.target;
+        let target_path = target.to_string().replace("..", "ppt");
+        match relation.r#type.as_ref() {
+            Relationship::RELATION_TYPE_IMAGE => {
+                image_max_number = image_max_number + 1;
+                let suffix = target.split(".").last().unwrap();
+                let medias_reference = target_package.medias.as_mut().unwrap();
+
+                if let Some(target) = add_media(package, image_max_number, suffix, &target_path, medias_reference) {
+                    relation.target = target;
+                };
+            }
+            Relationship::RELATION_TYPE_NOTES_SLIDE => {
+                notes_slide_number = notes_slide_number + 1;
+                let notes_slide_reference = target_package.notes_slides.as_mut().unwrap();
+                let old_index = extract_first_digital(&relation.target);
+                if let Some(target) = add_note_slide(package, notes_slide_number, &target_path, notes_slide_reference) {
+                    relation.target = target;
+                };
+                package.content_type.as_mut().unwrap().add_notes_slide(&format!("/ppt/notesSlides/notesSlide{}.xml", notes_slide_number));
+
+                //todo:解决嵌套问题
+                match notes_slide_rels.as_mut() {
+                    None => {
+                        println!("notes_slide_rels is none")
+                    }
+
+                    Some(notes_slide_rels) => {
+                        match old_index {
+                            None => {
+                                println!("old_index is none")
+                            }
+                            Some(old_index) => {
+                                let note_slide_rel_path = format!("ppt/notesSlides/_rels/notesSlide{}.xml.rels", old_index);
+                                let mut tobe_add_index = None;
+                                for (index, rels) in notes_slide_rels.iter_mut().enumerate() {
+                                    println!("rels.file_path = {},target = {}, eq = {}", rels.file_path, note_slide_rel_path, rels.file_path == note_slide_rel_path);
+                                    if rels.file_path == note_slide_rel_path {
+                                        tobe_add_index = Some(index);
+                                    }
+                                }
+                                println!("tobe_add_index = {:?}", tobe_add_index);
+                                if tobe_add_index.is_some() {
+                                    let mut notes_slide_rel = notes_slide_rels.remove(tobe_add_index.unwrap());
+                                    let new_rels_path = format!("ppt/notesSlides/_rels/notesSlide{}.xml.rels", notes_slide_number);
+                                    println!("{}", new_rels_path);
+                                    notes_slide_rel.file_path = new_rels_path;
+                                    notes_slide_rel.update_slide_target(&format!("../slides/slide{}.xml", extract_first_digital(new_path).unwrap()));
+
+                                    package.push_notes_slide_rel(notes_slide_rel);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 }
 
@@ -237,7 +330,7 @@ fn add_slide_layout(package: &mut Package, slide_layouts_number: i32, target_pat
 }
 
 
-fn add_note_slide(package: &mut Package, notes_slide_max_number: i32, target_path: &str, notes_slide_reference: &mut Vec<NotesSlide>) -> Option<String> {
+fn add_note_slide(package: &mut Package, notes_slide_max_number: u32, target_path: &str, notes_slide_reference: &mut Vec<NotesSlide>) -> Option<String> {
     let mut to_be_add_index = 99999;
 
     for (index, notes_slide) in notes_slide_reference.iter_mut().enumerate() {
@@ -255,7 +348,7 @@ fn add_note_slide(package: &mut Package, notes_slide_max_number: i32, target_pat
     }
 }
 
-fn add_media(package: &mut Package, image_max_number: i32, suffix: &str, ppt_path: &String, medias_reference: &mut Vec<Media>) -> Option<(String)> {
+fn add_media(package: &mut Package, image_max_number: u32, suffix: &str, ppt_path: &String, medias_reference: &mut Vec<Media>) -> Option<(String)> {
     let mut to_be_add_index = 99999;
     for (index, media) in medias_reference.iter_mut().enumerate() {
         if &media.file_path == ppt_path {
@@ -273,15 +366,21 @@ fn add_media(package: &mut Package, image_max_number: i32, suffix: &str, ppt_pat
 }
 
 
-fn add_slide_part(package: &mut Package, slides: Option<Vec<Slide>>) -> Vec<(i32, i32)> {
+fn add_slide_part(package: &mut Package, slides: Option<Vec<Slide>>) -> Vec<(u32, u32)> {
     let mut max_number = package.get_max_slide_number();
     let mut result = Vec::new();
     if let Some(slides) = slides {
         let mut new_index = max_number;
         for mut slide in slides {
             new_index += 1;
-            let old_index = extract_first_digital(&slide.file_path).expect("extract degital form slide file name error");
-            slide.file_path = format!("ppt/slides/slide{}.xml", new_index);
+
+            let old_index = extract_first_digital(&slide.body.file_path).expect("extract degital form slide file name error");
+            slide.body.file_path = format!("ppt/slides/slide{}.xml", new_index);
+
+            slide.relation.file_path = format!("ppt/slides/slide{}.xml.rel", new_index);
+            let part = &mut slide.relation;
+
+
             package.slides.as_mut().unwrap().push(slide);
             result.push((old_index, new_index));
             package.content_type.as_mut().unwrap().add_slide(&format!("/ppt/slides/slide{}.xml", new_index));
@@ -290,7 +389,8 @@ fn add_slide_part(package: &mut Package, slides: Option<Vec<Slide>>) -> Vec<(i32
     result
 }
 
-pub fn extract_first_digital(str: &str) -> Option<i32> {
+
+pub fn extract_first_digital(str: &str) -> Option<u32> {
     let regex = Regex::new(r"(\d+)").unwrap();
     let mut max = 0;
     for capture in regex.captures_iter(str) {
@@ -298,7 +398,7 @@ pub fn extract_first_digital(str: &str) -> Option<i32> {
         match capture {
             None => {}
             Some(capture) => {
-                let result: Result<i32, ParseIntError> = capture.as_str().parse();
+                let result: Result<u32, ParseIntError> = capture.as_str().parse();
                 match result {
                     Ok(result) => {
                         return Some(result);

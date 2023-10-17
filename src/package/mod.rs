@@ -12,11 +12,12 @@ use zip::read::ZipFile;
 use zip::write::FileOptions;
 use crate::{PresentationError};
 use regex::Regex;
+use crate::abstraction::Slides;
 
 use crate::package::content_type::{CONTENT_TYPE_FILE_NAME, ContentType};
 use crate::package::media::{MEDIA_DIR, UnSupportPart};
 use crate::package::PartEnum::{App, Authors, CommentAuthors, Core, Custom, HandoutMaster, NotesMaster, PresentationMain, PresProps, Slide, SlideMaster, TableStyles, Tags, Theme, ViewProps};
-use crate::package::parts::{ContentTypes, Media, NotesSlide, Part, Presentation, Rels, SlideLayout, Thumbnail};
+use crate::package::parts::{ContentTypes, Media, NotesSlide, Part, PartWithRelation, Presentation, Rels, SlideLayout, Thumbnail};
 use crate::zip::open;
 
 pub mod parts;
@@ -71,7 +72,7 @@ pub struct Package {
     pub tags: Option<Vec<parts::Tag>>,
     pub unsupport_parts: Option<Vec<parts::UnSupportParts>>,
     pub handout_masters: Option<Vec<parts::HandOutMaster>>,
-    pub slide_rels: Option<Vec<parts::Rels>>,
+    // pub slide_rels: Option<Vec<parts::Rels>>,
     pub slide_master_rels: Option<Vec<parts::Rels>>,
     pub slide_layout_rels: Option<Vec<parts::Rels>>,
     pub notes_slide_rels: Option<Vec<parts::Rels>>,
@@ -87,16 +88,39 @@ pub trait Save {
     fn save(self, writer: &mut ZipWriter<File>);
 }
 
-impl<T: Serialize> Save for Option<Part<T>> {
+impl<T: Serialize> Save for PartWithRelation<T> {
     fn save(self, writer: &mut ZipWriter<File>) {
         match self {
             Some(mut part) => {
-                writer.start_file(&part.file_path, FileOptions::default());
-                if part.body.is_some() {
-                    writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                    part.buf = Some(quick_xml::se::to_string(&part.body).unwrap().into_bytes())
+                part.body.save(writer);
+                part.relation.save(writer);
+            }
+            None => {}
+        }
+    }
+}
+
+
+
+
+impl<T: Serialize> Save for Part<T> {
+    fn save(mut self, writer: &mut ZipWriter<File>) {
+        writer.start_file(&self.file_path, FileOptions::default());
+        if self.body.is_some() {
+            writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
+            self.buf = Some(quick_xml::se::to_string(&self.body).unwrap().into_bytes())
+        }
+        writer.write_all(self.buf.unwrap().as_slice());
+    }
+}
+
+impl<T: Serialize> Save for Option<Vec<PartWithRelation<T>>> {
+    fn save(self, writer: &mut ZipWriter<File>) {
+        match self {
+            Some(parts) => {
+                for mut part in parts.into_iter() {
+                    part.save(writer);
                 }
-                writer.write_all(part.buf.unwrap().as_slice());
             }
             None => {}
         }
@@ -108,12 +132,7 @@ impl<T: Serialize> Save for Option<Vec<Part<T>>> {
         match self {
             Some(parts) => {
                 for mut part in parts.into_iter() {
-                    writer.start_file(&part.file_path, FileOptions::default());
-                    if part.body.is_some() {
-                        writer.write(r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#.as_bytes());
-                        part.buf = Some(quick_xml::se::to_string(&part.body).unwrap().into_bytes())
-                    }
-                    writer.write_all(part.buf.unwrap().as_slice());
+                    part.save(writer);
                 }
             }
             None => {}
@@ -122,6 +141,14 @@ impl<T: Serialize> Save for Option<Vec<Part<T>>> {
 }
 
 impl Package {
+    ///Add an image to the specified slide
+    pub fn add_picture(&mut self, slide: &mut parts::Slide) {
+        // slide.add_picture()
+    }
+
+
+
+
     pub fn push_medias(&mut self, mut new_medias: Vec<Media>) {
         match self.medias.as_mut() {
             None => {}
@@ -186,13 +213,13 @@ impl Package {
         }
     }
 
-    pub fn get_max_slide_number(&self) -> i32 {
+    pub fn get_max_slide_number(&self) -> u32 {
         let regex = Regex::new(r"(\d+)").unwrap();
         let mut max = 0;
         for slide in self.slides.as_ref().unwrap() {
             let file_path = &slide.file_path;
             for capture in regex.captures_iter(file_path) {
-                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                let value: u32 = capture.get(0).unwrap().as_str().parse().unwrap();
                 if value > max {
                     max = value;
                 }
@@ -202,14 +229,14 @@ impl Package {
     }
 
 
-    pub fn get_max_image_media_number(&self) -> i32 {
+    pub fn get_max_image_media_number(&self) -> u32 {
         let regex = Regex::new(r"(\d+)").unwrap();
         let mut max = 0;
         for slide in self.medias.as_ref().unwrap() {
             let file_path = &slide.file_path;
             if file_path.contains("image") {
                 for capture in regex.captures_iter(file_path) {
-                    let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                    let value: u32 = capture.get(0).unwrap().as_str().parse().unwrap();
                     if value > max {
                         max = value;
                     }
@@ -219,13 +246,13 @@ impl Package {
         max
     }
 
-    pub fn get_max_notes_slide_number(&self) -> i32 {
+    pub fn get_max_notes_slide_number(&self) -> u32 {
         let regex = Regex::new(r"(\d+)").unwrap();
         let mut max = 0;
         for slide in self.notes_slides.as_ref().unwrap() {
             let file_path = &slide.file_path;
             for capture in regex.captures_iter(file_path) {
-                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                let value: u32 = capture.get(0).unwrap().as_str().parse().unwrap();
                 if value > max {
                     max = value;
                 }
@@ -235,13 +262,13 @@ impl Package {
     }
 
 
-    pub fn get_max_slide_layouts_number(&self) -> i32 {
+    pub fn get_max_slide_layouts_number(&self) -> u32 {
         let regex = Regex::new(r"(\d+)").unwrap();
         let mut max = 0;
         for slide in self.slide_layouts.as_ref().unwrap() {
             let file_path = &slide.file_path;
             for capture in regex.captures_iter(file_path) {
-                let value: i32 = capture.get(0).unwrap().as_str().parse().unwrap();
+                let value: u32 = capture.get(0).unwrap().as_str().parse().unwrap();
                 if value > max {
                     max = value;
                 }
@@ -273,7 +300,6 @@ impl FileSave for Package {
         self.slide_masters.save(&mut writer);
         self.tags.save(&mut writer);
         self.handout_masters.save(&mut writer);
-        self.slide_rels.save(&mut writer);
         self.slide_master_rels.save(&mut writer);
         self.slide_layout_rels.save(&mut writer);
         self.notes_slide_rels.save(&mut writer);
@@ -318,6 +344,8 @@ impl From<ZipArchive<File>> for Package {
 
         let mut content_type: ContentType = read_to(content_type_file);
 
+        let mut slide_parts = Vec::new();
+
         for part in content_type.overrides.iter() {
             let part_enum = PartEnum::from_str(&part.content_type);
             match part_enum {
@@ -350,12 +378,8 @@ impl From<ZipArchive<File>> for Package {
                             slide_layouts.push(slide_layout);
                         }
                         Slide => {
-                            if package.slides.is_none() {
-                                package.slides = Some(Vec::new())
-                            }
-                            let slides = package.slides.as_mut().unwrap();
-                            let slide = parts::Slide::new_without_body(file_path, Some(read_to_vec(file)));
-                            slides.push(slide);
+                            let slide = parts::SlideBody::new_without_body(file_path, Some(read_to_vec(file)));
+                            slide_parts.push(slide);
                         }
                         NotesMaster => {
                             if package.notes_masters.is_none() {
@@ -418,10 +442,12 @@ impl From<ZipArchive<File>> for Package {
         file_names.remove(index);
 
 
-        if package.slide_rels.is_none() {
-            package.slide_rels = Some(Vec::new())
-        }
-        let slide_rels = package.slide_rels.as_mut().unwrap();
+        // if package.slide_rels.is_none() {
+        //     package.slide_rels = Some(Vec::new())
+        // }
+        // let slide_rels = package.slide_rels.as_mut().unwrap();
+        let mut slide_rels = Vec::new();
+
 
         if package.slide_master_rels.is_none() {
             package.slide_master_rels = Some(Vec::new())
@@ -452,11 +478,14 @@ impl From<ZipArchive<File>> for Package {
         }
         let unsupport_parts = package.unsupport_parts.as_mut().unwrap();
 
+
         for file_name in file_names {
             let mut file = zip.by_name(&file_name).unwrap();
 
             if file_name.starts_with(SLIDE_RELS_DIR_PATH) {
                 let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
+
+
                 slide_rels.push(slide_rel);
             } else if file_name.starts_with(SLIDE_LAYOUT_RELS_DIR_PATH) {
                 let slide_rel = parts::Rels::new_without_body(&file_name, Some(read_to_vec(file)));
@@ -482,9 +511,26 @@ impl From<ZipArchive<File>> for Package {
         }
 
 
+        //attach slide with slide_rels
+        let mut slides = Vec::new();
+        for relation in slide_rels {
+            for (index, slide) in slide_parts.iter_mut().enumerate() {
+                if relation.file_path.contains(&slide.body.file_path) {
+                    slides.push(parts::Slide {
+                        body: slide_parts.remove(index),
+                        relation: relation,
+                    });
+                    break;
+                }
+            }
+        }
+        package.slides = Some(slides);
+
+
         package
     }
 }
+
 
 fn read_to_vec(mut zipFile: ZipFile) -> Vec<u8> {
     let mut result = vec![];

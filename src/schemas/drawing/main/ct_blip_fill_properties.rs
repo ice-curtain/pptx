@@ -12,9 +12,7 @@ use crate::schemas::drawing::main::CtTileInfoProperties;
  * @author : zhilong.zhou
  * @description : CT_BlipFillProperties
  */
-
 #[derive(Serialize, Deserialize, Debug)]
-
 pub struct CtBlipFillProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "@dpi")]
@@ -26,7 +24,8 @@ pub struct CtBlipFillProperties {
 
     #[serde(rename(serialize = "a:blip", deserialize = "blip"))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub blip: Option<Box<CtBlip>>,
+    pub blip: Option<CtBlip>,
+    // pub blip: Option<Box<CtBlip>>,
 
     #[serde(rename(serialize = "a:srcRect", deserialize = "srcRect"))]
     #[serde(skip_serializing_if = "Option::is_none")]

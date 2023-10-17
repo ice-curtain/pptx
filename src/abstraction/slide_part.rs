@@ -2,20 +2,18 @@ use std::str::{Chars, from_utf8, from_utf8_unchecked};
 
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
+use crate::abstraction::common_model::DigitalAnchor;
 
 use crate::abstraction::shape::Shape;
 use crate::package::parts::Slide;
 use crate::schemas::drawing::main::{CtRegularTextRun, CtTextBody};
-use crate::schemas::presentation::main::{CtShape, ShapeChoice};
+use crate::schemas::presentation::main::{CtPicture, CtShape, ShapeChoice};
 
 /// part类型的是因为需要判断body，因此需要加上_part来跟其他元素进行区别
 
 impl Slide {
-
     pub fn list_shape(&mut self) -> Vec<&mut Shape> {
-        if self.body.is_none() {
-            self.initial_body();
-        }
+        self.check_initial();
         let sp_tree = &mut self.body.as_mut().unwrap().c_sld.sp_tree;
         let mut result = Vec::new();
         let items = &mut sp_tree.items;
@@ -28,6 +26,16 @@ impl Slide {
             }
         }
         result
+    }
+    pub fn add_picture(&mut self, anchor: DigitalAnchor) {
+        self.check_initial();
+        let sp_tree = self.get_sp_tree();
+        sp_tree.push(ShapeChoice::Pic(CtPicture::from_template("picture_id", 10, anchor)));
+    }
+
+    fn get_sp_tree(&mut self) -> &mut Vec<ShapeChoice> {
+        let sp_tree = &mut self.body.as_mut().unwrap().c_sld.sp_tree;
+        &mut sp_tree.items
     }
 }
 
@@ -62,9 +70,7 @@ impl WordCount for CtTextBody {
     }
 }
 
-///
-/// 在PPT中，英文字符是中文字符的2分之一，因此计算长宽时，我们以半个字体的大小作为单位计算数量
-///
+
 pub trait WordCount {
     fn word_count(&self) -> usize;
 }

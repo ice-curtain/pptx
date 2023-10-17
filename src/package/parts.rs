@@ -12,6 +12,13 @@ use crate::schemas::drawing::main::{CtOfficeStyleSheet, CtTableStyleList};
 use crate::schemas::presentation::main::{CtCommentAuthorList, CtHandoutMaster, CtNotesMaster, CtNotesSlide, CtPresentation, CtPresentationProperties, CtSlide, CtSlideLayout, CtSlideMaster, CtTagList, CtViewProperties};
 use crate::schemas::standard::microsoft::presentation::CtAuthorList;
 
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PartWithRelation<T> {
+    pub body: Part<T>,
+    pub relation: Rels,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Part<T> {
     pub file_path: String,
@@ -30,7 +37,8 @@ pub type App = Part<doc_props::App>;
 pub type Core = Part<doc_props::Core>;
 pub type Thumbnail = Part<Vec<u8>>;
 pub type Custom = Part<doc_props::Custom>;
-pub type Slide = Part<CtSlide>;
+pub type Slide = PartWithRelation<CtSlide>;
+pub type SlideBody = Part<CtSlide>;
 pub type Theme = Part<CtOfficeStyleSheet>;
 pub type NotesSlide = Part<CtNotesSlide>;
 pub type NotesMaster = Part<CtNotesMaster>;
@@ -86,9 +94,7 @@ impl Rels {
     }
 
     pub fn get_items(&mut self) -> &mut Vec<Relationship> {
-        if self.body.is_none() {
-            self.initial_body();
-        }
+        self.check_initial();
         let relations = &mut self.body.as_mut().unwrap().relations;
         return relations;
     }
@@ -138,6 +144,12 @@ impl<T> Display for Part<T> {
     }
 }
 
+impl<T> Display for PartWithRelation<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.body.fmt(f)
+    }
+}
+
 
 impl<T: DeserializeOwned> Part<T> {
     pub fn initial_body(&mut self) {
@@ -145,6 +157,12 @@ impl<T: DeserializeOwned> Part<T> {
         let str = from_utf8(buffer).unwrap();
         let result = quick_xml::de::from_str(str);
         self.body = Some(result.unwrap());
+    }
+
+    pub fn check_initial(&mut self) {
+        if self.body.is_none() {
+            self.initial_body();
+        }
     }
 
 
