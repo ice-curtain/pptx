@@ -27,7 +27,7 @@ pub struct CtCommonSlideData {
     pub bg: Option<CtBackground>,
 
     #[serde(rename(serialize = "p:spTree", deserialize = "spTree"))]
-    pub sp_tree: CtGroupShape,
+    pub sp_tree: Box<CtGroupShape>,
 
     #[serde(rename(serialize = "p:custDataLst", deserialize = "custDataLst"))]
     #[serde(skip_serializing_if = "Option::is_none")]

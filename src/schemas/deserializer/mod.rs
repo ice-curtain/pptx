@@ -9,9 +9,9 @@ use std::fmt::Formatter;
 use std::marker::PhantomData;
 
 impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
-    fn deserialize<__D>(__deserializer: __D) -> serde::__private::Result<Self, __D::Error>
+    fn deserialize<__D>(__deserializer: __D) -> Result<Self, __D::Error>
     where
-        __D: serde::Deserializer<'de>,
+        __D:Deserializer<'de>,
     {
         #[allow(non_camel_case_types)]
         enum __Field {
@@ -21,7 +21,7 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
             __ignore,
         }
         struct __FieldVisitor;
-        impl<'de> serde::de::Visitor<'de> for __FieldVisitor {
+        impl<'de> Visitor<'de> for __FieldVisitor {
             type Value = __Field;
             fn expecting(
                 &self,
@@ -51,16 +51,16 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
             }
         }
         struct __Visitor<'de> {
-            marker: serde::__private::PhantomData<CtSlideLayoutIdListEntry>,
-            lifetime: serde::__private::PhantomData<&'de ()>,
+            marker: PhantomData<CtSlideLayoutIdListEntry>,
+            lifetime: PhantomData<&'de ()>,
         }
-        impl<'de> serde::de::Visitor<'de> for __Visitor<'de> {
+        impl<'de> Visitor<'de> for __Visitor<'de> {
             type Value = CtSlideLayoutIdListEntry;
             fn expecting(
                 &self,
-                __formatter: &mut serde::__private::Formatter,
-            ) -> serde::__private::fmt::Result {
-                serde::__private::Formatter::write_str(
+                __formatter: &mut Formatter,
+            ) -> fmt::Result {
+                Formatter::write_str(
                     __formatter,
                     "struct CtSlideLayoutIdListEntry",
                 )
@@ -70,7 +70,7 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
             fn visit_map<__A>(
                 self,
                 mut __map: __A,
-            ) -> serde::__private::Result<Self::Value, __A::Error>
+            ) -> Result<Self::Value, __A::Error>
             where
                 __A: serde::de::MapAccess<'de>,
             {
@@ -84,7 +84,7 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
                     Some(serde::de::MapAccess::next_value::<String>(&mut __map)?);
 
                 let field2_key = serde::de::MapAccess::next_key::<__Field>(&mut __map)?;
-                let mut __field2: serde::__private::Option<Option<CtExtensionList>> =
+                let mut __field2: Option<Option<CtExtensionList>> =
                     if field2_key.is_some() {
                         Some(serde::de::MapAccess::next_value::<Option<CtExtensionList>>(
                             &mut __map,
@@ -94,12 +94,12 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
                     };
 
                 let __field0 = match __field0 {
-                    serde::__private::Some(__field0) => __field0,
-                    serde::__private::None => serde::__private::de::missing_field("@id")?,
+                    Some(__field0) => __field0,
+                    None => serde::__private::de::missing_field("@id")?,
                 };
                 let __field1 = match __field1 {
-                    serde::__private::Some(__field1) => __field1,
-                    serde::__private::None => serde::__private::de::missing_field("@r:id")?,
+                    Some(__field1) => __field1,
+                    None => serde::__private::de::missing_field("@r:id")?,
                 };
                 let __field2 = match __field2 {
                     serde::__private::Some(__field2) => __field2,
@@ -113,7 +113,7 @@ impl<'de> serde::Deserialize<'de> for CtSlideLayoutIdListEntry {
             }
         }
         const FIELDS: &'static [&'static str] = &["@id", "@r:id", "extLst"];
-        serde::Deserializer::deserialize_struct(
+        Deserializer::deserialize_struct(
             __deserializer,
             "CtSlideLayoutIdListEntry",
             FIELDS,

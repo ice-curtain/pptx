@@ -52,7 +52,7 @@ pub struct CtSlide {
     pub default_namespace_attr: Option<String>,
 
     #[serde(rename(serialize = "p:cSld", deserialize = "cSld"))]
-    pub c_sld: CtCommonSlideData,
+    pub c_sld: Box<CtCommonSlideData>,
 
     #[serde(rename(serialize = "p:transition", deserialize = "transition"))]
     #[serde(skip_serializing_if = "Option::is_none")]
